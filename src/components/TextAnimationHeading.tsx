@@ -22,7 +22,7 @@ const TextAnimationHeading = ({ className, classNameAnimationContainer }: TextAn
             1000, // wait 1s before replacing "Mice" with "Hamsters"
             "Your Ideas.",
             1000,
-            "One Editor",
+            "ColabDev",
             1000,
           ]}
           wrapper="span"

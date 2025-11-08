@@ -9,7 +9,7 @@ const Logo = ({ w, h }: { w?: number; h?: number }) => {
         src={"/logo.png"}
         width={w ?? 120}
         height={h ?? 50}
-        alt="One Editor"
+        alt="ColabDev"
       />
     </Link>
   );

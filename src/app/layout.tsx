@@ -10,7 +10,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "One Editor",
+  title: "ColabDev",
   description: "Build space your team, your idea and your editor",
 };
 

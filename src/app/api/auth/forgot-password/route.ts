@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
     //sending email
     await sendEmail(
         exituser.email,
-        "Forgot Password from one Editor",
+        "Forgot Password from ColabDev",
         ForgotPasswordEmail({
            name : exituser.name,
            url : URL 
