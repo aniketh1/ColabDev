@@ -122,7 +122,7 @@ const EditorSidebar = () => {
             {fileList.map((file, index) => {
               return (
                 <SidebarMenuItem key={file?._id}  >
-                  <SidebarMenuButton className="cursor-pointer" onClick={()=> router.push(`/editor/${projectId}?file=${file.name}`)}>
+                  <SidebarMenuButton className="cursor-pointer" onClick={()=> router.push(`/editor/${projectId}?file=${encodeURIComponent(file.name)}`)}>
                     <div className="w-4 h-4">
                         <Image
                             alt={file.name}

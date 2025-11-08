@@ -4,6 +4,7 @@ export interface IProject {
     _id? : mongoose.Types.ObjectId;
     name : string;
     userId : mongoose.Types.ObjectId,
+    techStack? : string,
     createdAt? : Date
     updatedAt? : Date
 }
@@ -17,6 +18,11 @@ const projectSchema = new mongoose.Schema<IProject>({
         type : mongoose.Schema.ObjectId,
         ref : 'User',
         required : true
+    },
+    techStack : {
+        type : String,
+        default : 'html',
+        enum : ['html', 'react', 'vue', 'node', 'nextjs']
     }
 },{
     timestamps : true

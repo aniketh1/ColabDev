@@ -17,6 +17,8 @@ import { toast } from "sonner";
 import UpdateProject from "./UpdateProject";
 import { useEditorContext } from "../_provider/EditorProvider";
 import { cn } from "@/lib/utils";
+import { RunCodeButton } from "@/components/RunCodeButton";
+import { ProjectTemplateSelector } from "@/components/ProjectTemplateSelector";
 
 const EditorHeader = () => {
   const router = useRouter();
@@ -24,6 +26,11 @@ const EditorHeader = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [data, setData] = useState({
     name: "",
+  });
+  const [projectFiles, setProjectFiles] = useState({
+    html: "",
+    css: "",
+    js: "",
   });
   const {
     isLoading: editorUpdateLoading,
@@ -53,9 +60,28 @@ const EditorHeader = () => {
     }
   };
 
+  const fetchProjectFiles = async () => {
+    try {
+      const [htmlRes, cssRes, jsRes] = await Promise.all([
+        Axios.post("/api/code", { projectId, fileName: "index.html" }).catch(() => ({ data: { data: { content: "" } } })),
+        Axios.post("/api/code", { projectId, fileName: "style.css" }).catch(() => ({ data: { data: { content: "" } } })),
+        Axios.post("/api/code", { projectId, fileName: "script.js" }).catch(() => ({ data: { data: { content: "" } } })),
+      ]);
+
+      setProjectFiles({
+        html: htmlRes.data?.data?.content || "",
+        css: cssRes.data?.data?.content || "",
+        js: jsRes.data?.data?.content || "",
+      });
+    } catch (error) {
+      console.error("Failed to fetch project files:", error);
+    }
+  };
+
   useEffect(() => {
     if (projectId) {
       fetchData();
+      fetchProjectFiles();
     }
   }, [projectId]);
 
@@ -100,7 +126,18 @@ const EditorHeader = () => {
       </div>
 
       {/***right side */}
-      <div className="ml-auto w-fit flex items-center gap-6">
+      <div className="ml-auto w-fit flex items-center gap-4">
+        {/* Project Templates */}
+        <ProjectTemplateSelector />
+        
+        {/* Run Code Button */}
+        <RunCodeButton
+          html={projectFiles.html}
+          css={projectFiles.css}
+          js={projectFiles.js}
+          projectId={projectId as string}
+        />
+        
         <div
           onClick={() => setOpenBrowser(!openBrowser)}
           className={cn(

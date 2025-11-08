@@ -10,7 +10,7 @@ import { uploadFileToS3 } from "@/lib/s3Operations";
 //create project
 export async function POST(request : NextRequest){
     try {
-        const { name } = await request.json()
+        const { name, techStack } = await request.json()
 
         const session = await getServerSession(authOptions)
 
@@ -32,43 +32,12 @@ export async function POST(request : NextRequest){
 
         const project = await ProjectModel.create({
             name : name,
-            userId : session.user.id 
+            userId : session.user.id,
+            techStack : techStack || 'html'
         })
         
-        const userId = session.user.id;
-        const projectId = project._id.toString();
-
-        // Upload initial files to S3 and create metadata in MongoDB
-        const files = [
-            { name: "index.html", content: hmltBoilerplateCode },
-            { name: "style.css", content: styleBoilrPlatCode },
-            { name: "script.js", content: scriptBoilrPlatCode }
-        ];
-
-        for (const file of files) {
-            // Upload to S3
-            const s3Result = await uploadFileToS3(userId, projectId, file.name, file.content);
-            
-            if (s3Result.success) {
-                // Create metadata in MongoDB
-                await FileModel.create({
-                    name: file.name,
-                    projectId: project._id,
-                    content: "", // Content is in S3, not MongoDB
-                    s3Key: s3Result.key,
-                    storageType: 's3'
-                });
-            } else {
-                // Fallback to MongoDB if S3 fails
-                console.error(`S3 upload failed for ${file.name}, using MongoDB fallback`);
-                await FileModel.create({
-                    name: file.name,
-                    projectId: project._id,
-                    content: file.content,
-                    storageType: 'mongodb'
-                });
-            }
-        }
+        // Files are now created by the client based on tech stack selection
+        // No need to create default files here
 
         return NextResponse.json(
             { 

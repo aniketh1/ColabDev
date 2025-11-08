@@ -16,11 +16,15 @@ export async function POST(request : NextRequest){
                 { status : 401 }
             )
         }
-        const { name ,projectId } = await request.json()
+        const { name, fileName, projectId, content } = await request.json()
+        
+        // Accept either 'name' or 'fileName' for backward compatibility
+        const finalFileName = fileName || name;
+        const finalContent = content || "";
 
-        if(!name || !projectId){
+        if(!finalFileName || !projectId){
             return NextResponse.json(
-                { error : "name and projectId is required"},
+                { error : "fileName and projectId are required"},
                 { status : 400 }
             )
         }
@@ -28,29 +32,29 @@ export async function POST(request : NextRequest){
         await connectDB()
 
         const checkFileName = await FileModel.findOne({ 
-            name : name,
+            name : finalFileName,
             projectId : projectId
         })
 
         if(checkFileName){
             return NextResponse.json(
-                { error : "File name is already exits"},
+                { error : "File name already exists"},
                 { status : 400 }
             )
         }
 
-        // Upload empty file to S3
+        // Upload file to S3 with content
         const s3Result = await uploadFileToS3(
             session.user.id,
             projectId,
-            name,
-            "" // Empty content for new file
+            finalFileName,
+            finalContent
         );
 
         if (s3Result.success) {
             // Create metadata in MongoDB
             await FileModel.create({
-                name : name,
+                name : finalFileName,
                 projectId : projectId,
                 content: "",
                 s3Key: s3Result.key,
@@ -59,9 +63,9 @@ export async function POST(request : NextRequest){
         } else {
             // Fallback to MongoDB if S3 fails
             await FileModel.create({
-                name : name,
+                name : finalFileName,
                 projectId : projectId,
-                content: "",
+                content: finalContent,
                 storageType: 'mongodb'
             });
         }
