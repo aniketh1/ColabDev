@@ -1,0 +1,36 @@
+{import { dirname } from "path";
+
+  "extends": ["next/core-web-vitals", "next/typescript"],import { fileURLToPath } from "url";
+
+  "rules": {import { FlatCompat } from "@eslint/eslintrc";
+
+    "react/no-unescaped-entities": "off",
+
+    "@next/next/no-page-custom-font": "off",const __filename = fileURLToPath(import.meta.url);
+
+    "@typescript-eslint/no-explicit-any": "off",const __dirname = dirname(__filename);
+
+    "@typescript-eslint/no-unused-vars": "warn",
+
+    "@typescript-eslint/no-empty-object-type": "off"const compat = new FlatCompat({
+
+  }  baseDirectory: __dirname,
+
+}});
+
+
+const eslintConfig = [
+  ...compat.extends("next/core-web-vitals", "next/typescript"),
+  ...compat.config({
+    extends: ['next'],
+    rules: {
+      'react/no-unescaped-entities': 'off',
+      '@next/next/no-page-custom-font': 'off',
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-unused-vars': 'warn', // or 'off'
+      'no-var': 'off',
+    },
+  }),
+];
+
+export default eslintConfig;
