@@ -10,6 +10,8 @@ export async function GET(request: NextRequest) {
     return new NextResponse('Missing parameters', { status: 400 });
   }
 
+  const baseUrl = request.nextUrl.origin;
+
   const html = `
 <!DOCTYPE html>
 <html lang="en">
@@ -60,12 +62,14 @@ export async function GET(request: NextRequest) {
 
     const statusText = document.getElementById('status-text');
     const iframeContainer = document.getElementById('iframe-container');
+    const projectId = '${projectId}';
+    const techStackType = '${techStack}';
 
     async function init() {
       try {
         // Fetch project files
         statusText.textContent = 'Fetching project files...';
-        const response = await fetch(\`${request.nextUrl.origin}/api/project-files/\${projectId}\`);
+        const response = await fetch('${baseUrl}/api/project-files/' + projectId);
         if (!response.ok) throw new Error('Failed to fetch project files');
         
         const { data } = await response.json();
@@ -123,10 +127,11 @@ export async function GET(request: NextRequest) {
       };
 
       const viteConfig = techStack === 'react'
-        ? \`import { defineConfig } from 'vite'\\nimport react from '@vitejs/plugin-react'\\n\\nexport default defineConfig({ plugins: [react()], server: { port: 3000 } })\`
-        : \`import { defineConfig } from 'vite'\\nimport vue from '@vitejs/plugin-vue'\\n\\nexport default defineConfig({ plugins: [vue()], server: { port: 3000 } })\`;
+        ? "import { defineConfig } from 'vite'\\nimport react from '@vitejs/plugin-react'\\n\\nexport default defineConfig({ plugins: [react()], server: { port: 3000 } })"
+        : "import { defineConfig } from 'vite'\\nimport vue from '@vitejs/plugin-vue'\\n\\nexport default defineConfig({ plugins: [vue()], server: { port: 3000 } })";
 
-      const indexHtml = \`<!DOCTYPE html>\\n<html lang="en">\\n<head>\\n<meta charset="UTF-8" />\\n<title>\${techStack} Preview</title>\\n</head>\\n<body>\\n<div id="root"></div>\\n<script type="module" src="/src/main.\${techStack === 'react' ? 'jsx' : 'js'}"></script>\\n</body>\\n</html>\`;
+      const mainFile = techStack === 'react' ? 'jsx' : 'js';
+      const indexHtml = "<!DOCTYPE html>\\n<html lang=\\"en\\">\\n<head>\\n<meta charset=\\"UTF-8\\" />\\n<title>" + techStack + " Preview</title>\\n</head>\\n<body>\\n<div id=\\"root\\"></div>\\n<script type=\\"module\\" src=\\"/src/main." + mainFile + "\\"></script>\\n</body>\\n</html>";
 
       const fileTree = {
         'package.json': { file: { contents: JSON.stringify(packageJson, null, 2) } },
