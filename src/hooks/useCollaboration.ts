@@ -28,7 +28,13 @@ export function useCollaboration({
   // Broadcast file changes to other users
   const broadcastChange = useCallback(
     debounce((content: string, cursorPosition?: any) => {
-      if (socket && fileName && !isRemoteUpdateRef.current) {
+      // Gracefully handle when socket is not available
+      if (!socket || !isConnected) {
+        // Socket not available, skip broadcasting (manual save mode)
+        return;
+      }
+      
+      if (fileName && !isRemoteUpdateRef.current) {
         console.log('📤 Broadcasting change:', fileName);
         socket.emit('file-change', {
           projectId,
@@ -40,19 +46,22 @@ export function useCollaboration({
       }
       isRemoteUpdateRef.current = false;
     }, 300),
-    [socket, projectId, fileName]
+    [socket, isConnected, projectId, fileName]
   );
 
   // Notify others when file is saved
   const notifyFileSaved = useCallback(() => {
-    if (socket && fileName) {
-      console.log('💾 Notifying file saved:', fileName);
-      socket.emit('file-saved', {
-        projectId,
-        fileName,
-      });
+    // Gracefully handle when socket is not available
+    if (!socket || !isConnected || !fileName) {
+      return;
     }
-  }, [socket, projectId, fileName]);
+    
+    console.log('💾 Notifying file saved:', fileName);
+    socket.emit('file-saved', {
+      projectId,
+      fileName,
+    });
+  }, [socket, isConnected, projectId, fileName]);
 
   // Listen for remote updates
   useEffect(() => {
