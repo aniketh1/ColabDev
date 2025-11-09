@@ -78,50 +78,133 @@ export async function GET(request: NextRequest) {
     const projectId = '${escapeForScript(projectId)}';
     const techStackType = '${escapeForScript(techStack)}';
 
+    // Enhanced logging
+    function log(message, data) {
+      console.log('[Preview]', message, data || '');
+      if (message.includes('Error') || message.includes('Failed')) {
+        console.error('[Preview Error]', message, data);
+      }
+    }
+
     async function init() {
       try {
+        log('Starting initialization...', { projectId, techStackType });
+        
+        // Step 1: Fetch project files
         statusText.textContent = 'Fetching project files...';
-        const response = await fetch('${escapeForScript(baseUrl)}/api/project-files/' + projectId);
-        if (!response.ok) throw new Error('Failed to fetch project files');
+        log('Fetching project files from API...');
+        const response = await fetch('${escapeForScript(baseUrl)}/api/project-files/' + projectId, {
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+        log('Fetch response received', { status: response.status, ok: response.ok });
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          log('Fetch failed', { status: response.status, error: errorText });
+          throw new Error('Failed to fetch project files: ' + response.status + ' - ' + errorText);
+        }
         
         const result = await response.json();
+        log('Project data received', { 
+          fileCount: Object.keys(result.data.files || {}).length,
+          techStack: result.data.techStack 
+        });
+        
         const files = result.data.files;
         const techStack = result.data.techStack;
 
-        statusText.textContent = 'Booting WebContainer...';
-        const webcontainer = await WebContainer.boot();
-
-        statusText.textContent = 'Creating project files...';
-        const fileTree = createFileTree(techStack, files);
-        await webcontainer.mount(fileTree);
-
-        statusText.textContent = 'Installing dependencies...';
-        const installProcess = await webcontainer.spawn('npm', ['install']);
-        const installExitCode = await installProcess.exit;
-        
-        if (installExitCode !== 0) {
-          throw new Error('npm install failed');
+        if (!files || Object.keys(files).length === 0) {
+          throw new Error('No files found in project');
         }
 
+        // Step 2: Boot WebContainer
+        statusText.textContent = 'Booting WebContainer...';
+        log('Starting WebContainer boot...');
+        const bootStart = Date.now();
+        const webcontainer = await WebContainer.boot();
+        const bootTime = Date.now() - bootStart;
+        log('WebContainer booted successfully', { bootTime: bootTime + 'ms' });
+
+        // Step 3: Create and mount files
+        statusText.textContent = 'Creating project files...';
+        log('Creating file tree...');
+        const fileTree = createFileTree(techStack, files);
+        log('File tree created', { structure: Object.keys(fileTree) });
+        
+        log('Mounting files to WebContainer...');
+        await webcontainer.mount(fileTree);
+        log('Files mounted successfully');
+
+        // Step 4: Install dependencies
+        statusText.textContent = 'Installing dependencies...';
+        log('Running npm install...');
+        const installStart = Date.now();
+        const installProcess = await webcontainer.spawn('npm', ['install']);
+        
+        // Stream install output
+        installProcess.output.pipeTo(new WritableStream({
+          write(data) {
+            console.log('[npm install]', data);
+          }
+        }));
+        
+        const installExitCode = await installProcess.exit;
+        const installTime = Date.now() - installStart;
+        log('npm install completed', { exitCode: installExitCode, time: installTime + 'ms' });
+        
+        if (installExitCode !== 0) {
+          throw new Error('npm install failed with exit code: ' + installExitCode);
+        }
+
+        // Step 5: Start dev server
         statusText.textContent = 'Starting dev server...';
+        log('Running npm run dev...');
         const devProcess = await webcontainer.spawn('npm', ['run', 'dev']);
+        
+        // Stream dev server output
+        devProcess.output.pipeTo(new WritableStream({
+          write(data) {
+            console.log('[npm run dev]', data);
+          }
+        }));
+
+        log('Waiting for server-ready event...');
+        
+        // Add timeout for server-ready event
+        const serverReadyTimeout = setTimeout(() => {
+          log('Warning: server-ready event timeout (30s)');
+          statusText.textContent = 'Server taking longer than expected...';
+        }, 30000);
 
         webcontainer.on('server-ready', (port, url) => {
+          clearTimeout(serverReadyTimeout);
+          log('Server ready!', { port, url });
           statusText.textContent = 'Ready!';
+          
           setTimeout(() => {
             statusDiv.style.display = 'none';
           }, 1000);
           
+          log('Creating iframe with URL:', url);
           const iframe = document.createElement('iframe');
           iframe.src = url;
+          iframe.onload = () => log('Iframe loaded successfully');
+          iframe.onerror = (e) => log('Iframe load error', e);
           iframeContainer.appendChild(iframe);
         });
 
       } catch (error) {
+        log('Fatal error during initialization', { 
+          message: error.message, 
+          stack: error.stack 
+        });
         statusDiv.querySelector('.loader').style.display = 'none';
         statusText.className = 'error';
         statusText.textContent = 'Error: ' + error.message;
-        console.error(error);
+        console.error('[Preview] Full error:', error);
       }
     }
 
