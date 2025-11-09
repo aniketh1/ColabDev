@@ -124,8 +124,10 @@ export async function POST(request : NextRequest){
         )
 
     } catch (error) {
+        console.error('❌ POST /api/code error:', error);
         return NextResponse.json({
-            error : "Something went wrong"
+            error : "Something went wrong",
+            details: error instanceof Error ? error.message : 'Unknown error'
         },{
             status : 500
         })
@@ -143,11 +145,20 @@ export async function PUT(request : NextRequest){
             )
         }
 
-        const { content, fileId } = await request.json()
+        const body = await request.json()
+        const { content, fileId } = body
+
+        console.log('📝 PUT /api/code - Save file request:', {
+            userId: session.user.id,
+            userEmail: session.user.email,
+            fileId: fileId || 'MISSING',
+            contentLength: content?.length || 0,
+            bodyKeys: Object.keys(body)
+        });
 
         if(!fileId){
             return NextResponse.json(
-                { error : "fileId is required"},
+                { error : "fileId is required", received: body },
                 { status : 400 }
             )
         }

@@ -113,6 +113,13 @@ const CodeEditor = () => {
   const updateData = async (fileContent: string) => {
     // Don't save if user doesn't have edit access
     if (!projectAccess.canEdit) {
+      console.log('⛔ Save blocked - no edit access');
+      return;
+    }
+
+    // Don't save if fileId is not set yet
+    if (!fileId) {
+      console.log('⛔ Save blocked - fileId not loaded yet');
       return;
     }
 
@@ -120,16 +127,32 @@ const CodeEditor = () => {
       fileId: fileId,
       content: fileContent,
     };
+    
+    console.log('💾 Saving file:', {
+      file,
+      fileId,
+      contentLength: fileContent?.length || 0
+    });
+    
     try {
       const response = await Axios.put("/api/code", payload);
 
       if (response.status === 200) {
+        console.log('✅ File saved successfully');
         // Notify other collaborators that file was saved
         notifyFileSaved();
       }
     } catch (error: any) {
+      console.error('❌ Save failed:', {
+        status: error.response?.status,
+        error: error.response?.data?.error,
+        fileId,
+        file
+      });
       if (error.response?.status === 403) {
         toast.error('You don\'t have permission to edit this file', { duration: 3000 });
+      } else if (error.response?.status === 400) {
+        toast.error('Failed to save: Invalid request');
       } else {
         toast.error('Failed to save changes');
       }
