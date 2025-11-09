@@ -3,13 +3,25 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/authOptions';
 
-// Initialize Liveblocks with your secret key
-const liveblocks = new Liveblocks({
-  secret: process.env.LIVEBLOCKS_SECRET_KEY!,
-});
+// Initialize Liveblocks with your secret key (only if available)
+let liveblocks: Liveblocks | null = null;
+
+if (process.env.LIVEBLOCKS_SECRET_KEY && process.env.LIVEBLOCKS_SECRET_KEY.startsWith('sk_')) {
+  liveblocks = new Liveblocks({
+    secret: process.env.LIVEBLOCKS_SECRET_KEY,
+  });
+}
 
 export async function POST(request: NextRequest) {
   try {
+    // Check if Liveblocks is configured
+    if (!liveblocks) {
+      return NextResponse.json(
+        { error: 'Liveblocks is not configured. Please add LIVEBLOCKS_SECRET_KEY to environment variables.' },
+        { status: 503 }
+      );
+    }
+
     // Get the current user session
     const session = await getServerSession(authOptions);
 

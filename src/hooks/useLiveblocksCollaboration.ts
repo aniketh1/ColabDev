@@ -24,10 +24,23 @@ export function useLiveblocksCollaboration({
   onUserLeft,
   onFileSaved,
 }: LiveblocksCollaborationOptions) {
-  const [myPresence, updateMyPresence] = useMyPresence();
-  const others = useOthers();
-  const broadcast = useBroadcastEvent();
-  const status = useStatus();
+  // Safely access Liveblocks hooks with error handling
+  let myPresence: any = [null, () => {}];
+  let others: any = [];
+  let broadcast: any = () => {};
+  let status: any = 'disconnected';
+
+  try {
+    const [presence, updatePresence] = useMyPresence();
+    myPresence = [presence, updatePresence];
+    others = useOthers();
+    broadcast = useBroadcastEvent();
+    status = useStatus();
+  } catch (error) {
+    console.warn('⚠️ Liveblocks not available, collaboration features disabled');
+  }
+
+  const [, updateMyPresence] = myPresence;
   
   const lastContentRef = useRef<string>('');
   const isRemoteUpdateRef = useRef(false);

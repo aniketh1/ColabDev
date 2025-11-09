@@ -4,6 +4,7 @@ import { createClient } from '@liveblocks/client';
 import { createRoomContext } from '@liveblocks/react';
 
 // Create Liveblocks client with authentication
+// Will gracefully handle when environment variables are not set
 const client = createClient({
   authEndpoint: '/api/liveblocks-auth',
   // Optional: throttle updates for better performance
