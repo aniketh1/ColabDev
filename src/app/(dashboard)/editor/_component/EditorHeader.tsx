@@ -38,6 +38,7 @@ const EditorHeader = () => {
     isLoading: editorUpdateLoading,
     setOpenBrowser,
     openBrowser,
+    setProjectAccess,
   } = useEditorContext();
 
   console.log("params", projectId);
@@ -53,7 +54,18 @@ const EditorHeader = () => {
       });
 
       if (response.status === 200) {
-        setData(response?.data?.data?.[0]);
+        const projectData = response?.data?.data?.[0];
+        setData(projectData);
+        
+        // Set project access info for the provider
+        if (projectData) {
+          setProjectAccess({
+            isOwner: projectData.isOwner || false,
+            isCollaborator: projectData.isCollaborator || false,
+            isPublic: projectData.isPublic !== false, // default to true
+            canEdit: projectData.isOwner || projectData.isCollaborator || false,
+          });
+        }
       }
     } catch (error: any) {
       toast.error(error?.response?.data?.error);

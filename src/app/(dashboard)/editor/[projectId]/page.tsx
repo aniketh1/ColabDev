@@ -17,58 +17,55 @@ import { useLiveblocksCollaborationReal } from "@/hooks/useLiveblocksCollaborati
 import { useIsLiveblocksAvailable } from "@/contexts/LiveblocksAvailabilityContext";
 import { cn } from "@/lib/utils";
 
+
 const CodeEditor = () => {
   const searchParams = useSearchParams();
-  const file = searchParams.get("file");
+  const file = searchParams?.get("file") || "";
   const [element, setElement] = useState<HTMLElement | null>(null);
-  const { projectId } = useParams();
-  const [content, setContent] = useState<string>();
+  const params = useParams();
+  const projectId = params?.projectId as string;
+  const [content, setContent] = useState<string>("");
   const [fileId, setFileId] = useState<string>();
-  const { isLoading, setIsLoading, setCode } = useEditorContext();
+  const { isLoading, setIsLoading, setCode, projectAccess } = useEditorContext();
   const editorViewRef = useRef<EditorView | null>(null);
   const isRemoteUpdateRef = useRef(false);
   const { isAvailable } = useIsLiveblocksAvailable();
+  const lastSyncedContentRef = useRef<string>("");
 
   // Choose the right collaboration hook based on availability
   const collaborationOptions = {
     fileName: file || '',
-    onContentUpdate: (newContent: string, userId: string) => {
-      if (editorViewRef.current && !isRemoteUpdateRef.current) {
-        isRemoteUpdateRef.current = true;
-        const transaction = editorViewRef.current.state.update({
-          changes: {
-            from: 0,
-            to: editorViewRef.current.state.doc.length,
-            insert: newContent,
-          },
-        });
-        editorViewRef.current.dispatch(transaction);
-        setContent(newContent);
-        toast.info('Editor updated by collaborator', { duration: 2000 });
-        setTimeout(() => {
-          isRemoteUpdateRef.current = false;
-        }, 100);
-      }
+    onContentUpdate: (newContent: string) => {
+      // Store the remote update but DON'T force update the editor
+      // The editor will naturally show the content on next file open
+      lastSyncedContentRef.current = newContent;
+      setCode(newContent);
     },
     onUserJoined: (userId: string, userInfo: any) => {
-      toast.success(`${userInfo?.name || 'A collaborator'} joined`, { duration: 2000 });
+      toast.success(`👤 ${userInfo?.name || 'A collaborator'} joined`, { duration: 2000 });
     },
-    onUserLeft: (userId: string) => {
-      toast.info('A collaborator left', { duration: 2000 });
+    onUserLeft: () => {
+      toast.info('👋 A collaborator left', { duration: 2000 });
     },
   };
 
-  // Use real Liveblocks hook when available, fallback otherwise
+  // Always call both hooks, but only use one based on availability
+  const realCollab = useLiveblocksCollaborationReal(collaborationOptions);
+  const fallbackCollab = useLiveblocksCollaboration(collaborationOptions);
+  
+  // Select which collaboration system to use
   const { isConnected, broadcastChange, notifyFileSaved } = isAvailable
-    ? useLiveblocksCollaborationReal(collaborationOptions)
-    : useLiveblocksCollaboration(collaborationOptions);
+    ? realCollab
+    : fallbackCollab;
 
   const ref = useCallback((node: HTMLElement | null) => {
     if (!node) return;
     setElement(node);
   }, []);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
+    if (!file || !projectId) return;
+    
     const payload = {
       projectId: projectId,
       fileName: file,
@@ -96,26 +93,31 @@ const CodeEditor = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [file, projectId, setIsLoading, setCode]);
 
   const updateData = async (fileContent: string) => {
+    // Don't save if user doesn't have edit access
+    if (!projectAccess.canEdit) {
+      return;
+    }
+
     const payload = {
       fileId: fileId,
       content: fileContent,
     };
     try {
-      setIsLoading(true);
       const response = await Axios.put("/api/code", payload);
 
       if (response.status === 200) {
         // Notify other collaborators that file was saved
         notifyFileSaved();
-        toast.success('Changes saved', { duration: 1500 });
       }
     } catch (error: any) {
-      toast.error(error.response.data.error);
-    } finally {
-      setIsLoading(false);
+      if (error.response?.status === 403) {
+        toast.error('You don\'t have permission to edit this file', { duration: 3000 });
+      } else {
+        toast.error('Failed to save changes');
+      }
     }
   };
 
@@ -125,57 +127,72 @@ const CodeEditor = () => {
   console.log("extension", extension);
 
   useEffect(() => {
-    if (file && projectId) {
-      fetchData();
-    }
-  }, [file, projectId]);
+    fetchData();
+  }, [fetchData]);
 
   
-  const updateDataDebounce = debounce((doc : string)=>{
-    updateData(doc);
-  },2000)
+  const updateDataDebounce = useRef(
+    debounce((doc: string) => {
+      updateData(doc);
+    }, 2000)
+  ).current;
 
   useEffect(() => {
-    if (!element) return;
+    if (!element || !file) return;
 
-    const state = EditorState.create({
-      doc: content,
-      extensions: [
-        basicSetup,
-        //html, css , javascript
+    // Determine language based on file extension
+    const extensionArray = file.split(".");
+    const extension = extensionArray[extensionArray.length - 1];
+
+    // Create extensions array
+    const extensions: any[] = [
+      basicSetup,
+      // Add read-only mode if user can't edit
+      ...(projectAccess.canEdit ? [] : [EditorView.editable.of(false)]),
+      // Language support
+      extension === "js"
+        ? javascript()
+        : extension === "css"
+          ? css()
+          : html({
+              autoCloseTags: true,
+              selfClosingTags: true,
+              nestedLanguages: [
+                {
+                  tag: "style",
+                  parser: cssLanguage.parser,
+                },
+                {
+                  tag: "script",
+                  parser: javascriptLanguage.parser,
+                },
+              ],
+            }),
+    ];
+
+    // Only add update listener if user can edit
+    if (projectAccess.canEdit) {
+      extensions.push(
         EditorView.updateListener.of((update) => {
           if (update.docChanged && !isRemoteUpdateRef.current) {
             const newContent = update.state.doc.toString();
-            
+
             // Update code in EditorProvider for preview
             setCode(newContent);
-            
+
             // Broadcast changes to other collaborators
             broadcastChange(newContent);
-            
+
             // Auto-save to database after 2 seconds
             updateDataDebounce(newContent);
           }
-        }),
-        extension === "js"
-          ? javascript()
-          : extension === "css"
-            ? css()
-            : html({
-              autoCloseTags : true,
-              selfClosingTags  : true,
-              nestedLanguages : [
-                { 
-                  tag : "style",
-                  parser : cssLanguage.parser
-                },
-                { 
-                  tag : "script",
-                  parser : javascriptLanguage.parser
-                }
-              ]
-            }),
-      ],
+        })
+      );
+    }
+
+    const state = EditorState.create({
+      doc: content || "",
+      extensions,
     });
 
     const view = new EditorView({
@@ -189,7 +206,10 @@ const CodeEditor = () => {
       view.destroy();
       editorViewRef.current = null;
     };
-  }, [file, element, content]);
+    // Deliberately excluding broadcastChange, setCode, and updateDataDebounce
+    // as they are stable refs and don't need to trigger re-renders
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [file, element, content, projectAccess.canEdit]);
 
   return (
     <div className="h-full w-full p-3">
@@ -215,8 +235,25 @@ const CodeEditor = () => {
         </div>
       ) : (
         <div className="relative h-full rounded-xl overflow-hidden border border-border/50 shadow-2xl bg-card">
+          {/* Read-Only Banner */}
+          {!projectAccess.canEdit && (
+            <div className="absolute top-0 left-0 right-0 z-30 bg-gradient-to-r from-amber-500/20 to-orange-500/20 backdrop-blur-xl px-4 py-2 border-b border-amber-500/30">
+              <div className="flex items-center gap-2 justify-center">
+                <svg className="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+                <span className="text-xs font-semibold text-amber-500 tracking-wide">
+                  READ-ONLY MODE - You are viewing this project
+                </span>
+              </div>
+            </div>
+          )}
+          
           {/* Collaboration Status Indicator */}
-          <div className="absolute top-3 right-3 z-20 flex items-center gap-2">
+          <div className={cn(
+            "absolute z-20 flex items-center gap-2",
+            !projectAccess.canEdit ? "top-14 right-3" : "top-3 right-3"
+          )}>
             <div className={cn(
               "flex items-center gap-2 backdrop-blur-xl px-4 py-2 rounded-xl shadow-lg border transition-all duration-300",
               isConnected 
@@ -243,7 +280,10 @@ const CodeEditor = () => {
           </div>
           
           <div
-            className="relative h-full w-full overflow-auto bg-gradient-to-br from-background via-background to-muted/10"
+            className={cn(
+              "relative h-full w-full overflow-auto bg-gradient-to-br from-background via-background to-muted/10",
+              !projectAccess.canEdit && "pt-12"
+            )}
             ref={ref}
           ></div>
         </div>
@@ -254,7 +294,8 @@ const CodeEditor = () => {
 
 // Wrap the editor with Liveblocks provider
 export default function EditorPage() {
-  const { projectId } = useParams();
+  const params = useParams();
+  const projectId = params?.projectId as string;
   
   return (
     <LiveblocksProvider roomId={`project-${projectId}`}>

@@ -8,6 +8,13 @@ interface TEditorProvider {
     setOpenBrowser : (value : boolean)=>void
     code: string;
     setCode: (value: string) => void;
+    projectAccess: {
+        isOwner: boolean;
+        isCollaborator: boolean;
+        isPublic: boolean;
+        canEdit: boolean;
+    };
+    setProjectAccess: (value: any) => void;
 }
 
 const initialValue = {
@@ -16,7 +23,14 @@ const initialValue = {
     openBrowser : false,
     setOpenBrowser : ()=>{},
     code: '',
-    setCode: () => {}
+    setCode: () => {},
+    projectAccess: {
+        isOwner: false,
+        isCollaborator: false,
+        isPublic: true,
+        canEdit: false,
+    },
+    setProjectAccess: () => {}
 }
 
 const EditorProvider = createContext<TEditorProvider>(initialValue)
@@ -28,6 +42,12 @@ export function EditorProviderComp({children} : { children : React.ReactNode }){
     const [isLoading,setIsLoading] = useState<boolean>(false)
     const [openBrowser,setOpenBrowser] = useState<boolean>(false)
     const [code, setCode] = useState<string>('')
+    const [projectAccess, setProjectAccess] = useState({
+        isOwner: false,
+        isCollaborator: false,
+        isPublic: true,
+        canEdit: false,
+    })
 
     const handleLoading = (value? : boolean)=>{
         setIsLoading(value || false)
@@ -41,6 +61,10 @@ export function EditorProviderComp({children} : { children : React.ReactNode }){
         setCode(value)
     }
 
+    const handleSetProjectAccess = (value: any) => {
+        setProjectAccess(value)
+    }
+
 
     return(
         <EditorProvider.Provider value={{
@@ -49,7 +73,9 @@ export function EditorProviderComp({children} : { children : React.ReactNode }){
             openBrowser: openBrowser,
             setOpenBrowser : handleOpenBrowser,
             code: code,
-            setCode: handleSetCode
+            setCode: handleSetCode,
+            projectAccess: projectAccess,
+            setProjectAccess: handleSetProjectAccess
         }}>
             {children}
         </EditorProvider.Provider>

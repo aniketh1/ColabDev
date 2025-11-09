@@ -112,11 +112,17 @@ export async function GET(request : NextRequest){
                 })
             }
 
-            // Return single project
+            // Return single project with access info
+            const projectData = project.toObject();
             return NextResponse.json(
                 { 
                     message : "Project found",
-                    data : [project]
+                    data : [{
+                        ...projectData,
+                        isOwner,
+                        isCollaborator,
+                        canEdit: isOwner || isCollaborator
+                    }]
                 },
                 { status : 200 }
             )
