@@ -13,6 +13,8 @@ import { useEditorContext } from "../_provider/EditorProvider";
 import debounce from "@/lib/debounce";
 import { LiveblocksProvider } from "@/components/LiveblocksProvider";
 import { useLiveblocksCollaboration } from "@/hooks/useLiveblocksCollaboration";
+import { useLiveblocksCollaborationReal } from "@/hooks/useLiveblocksCollaborationReal";
+import { useIsLiveblocksAvailable } from "@/contexts/LiveblocksAvailabilityContext";
 import { cn } from "@/lib/utils";
 
 const CodeEditor = () => {
@@ -249,8 +251,15 @@ const CodeEditor = () => {
     }
   };
 
-  // Use Liveblocks collaboration hook
-  const { isConnected, broadcastChange } = useLiveblocksCollaboration(collaborationOptions);
+  // Check if Liveblocks is available
+  const { isAvailable: isLiveblocksAvailable } = useIsLiveblocksAvailable();
+
+  // Use appropriate collaboration hook based on availability
+  const collaborationHook = isLiveblocksAvailable
+    ? useLiveblocksCollaborationReal
+    : useLiveblocksCollaboration;
+
+  const { isConnected, broadcastChange } = collaborationHook(collaborationOptions);
 
   // Fetch file content when file or projectId changes
   useEffect(() => {
@@ -281,7 +290,7 @@ const CodeEditor = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [file, projectId]);
 
-  // Initialize CodeMirror editor
+  // Initialize CodeMirror editor once
   useEffect(() => {
     if (!element || !file) return;
 
@@ -300,7 +309,7 @@ const CodeEditor = () => {
       EditorView.theme({
         "&": { height: "100%" },
         ".cm-scroller": { overflow: "auto" },
-        ".cm-content": { 
+        ".cm-content": {
           fontFamily: "'Fira Code', 'Monaco', 'Courier New', monospace",
           fontSize: "14px"
         }
@@ -360,7 +369,24 @@ const CodeEditor = () => {
       view.destroy();
       editorViewRef.current = null;
     };
-  }, [file, element, content, projectAccess.canEdit, setCode, broadcastChange, debouncedSave]);
+  }, [file, element, projectAccess.canEdit, setCode, broadcastChange, debouncedSave]);
+
+  // Update editor content when it changes (without recreating editor)
+  useEffect(() => {
+    if (!editorViewRef.current || isRemoteUpdateRef.current) return;
+
+    const currentContent = editorViewRef.current.state.doc.toString();
+    if (content !== currentContent) {
+      const transaction = editorViewRef.current.state.update({
+        changes: {
+          from: 0,
+          to: currentContent.length,
+          insert: content
+        }
+      });
+      editorViewRef.current.dispatch(transaction);
+    }
+  }, [content]);
 
   return (
     <div className="h-full w-full p-3">
