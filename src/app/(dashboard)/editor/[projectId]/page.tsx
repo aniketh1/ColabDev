@@ -13,6 +13,8 @@ import { useEditorContext } from "../_provider/EditorProvider";
 import debounce from "@/lib/debounce";
 import { LiveblocksProvider } from "@/components/LiveblocksProvider";
 import { useLiveblocksCollaboration } from "@/hooks/useLiveblocksCollaboration";
+import { useLiveblocksCollaborationReal } from "@/hooks/useLiveblocksCollaborationReal";
+import { useIsLiveblocksAvailable } from "@/contexts/LiveblocksAvailabilityContext";
 
 const CodeEditor = () => {
   const searchParams = useSearchParams();
@@ -24,9 +26,10 @@ const CodeEditor = () => {
   const { isLoading, setIsLoading } = useEditorContext();
   const editorViewRef = useRef<EditorView | null>(null);
   const isRemoteUpdateRef = useRef(false);
+  const { isAvailable } = useIsLiveblocksAvailable();
 
-  // Real-time collaboration with Liveblocks
-  const { isConnected, broadcastChange, notifyFileSaved } = useLiveblocksCollaboration({
+  // Choose the right collaboration hook based on availability
+  const collaborationOptions = {
     fileName: file || '',
     onContentUpdate: (newContent: string, userId: string) => {
       if (editorViewRef.current && !isRemoteUpdateRef.current) {
@@ -52,7 +55,12 @@ const CodeEditor = () => {
     onUserLeft: (userId: string) => {
       toast.info('A collaborator left', { duration: 2000 });
     },
-  });
+  };
+
+  // Use real Liveblocks hook when available, fallback otherwise
+  const { isConnected, broadcastChange, notifyFileSaved } = isAvailable
+    ? useLiveblocksCollaborationReal(collaborationOptions)
+    : useLiveblocksCollaboration(collaborationOptions);
 
   const ref = useCallback((node: HTMLElement | null) => {
     if (!node) return;

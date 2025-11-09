@@ -11,9 +11,10 @@ interface LiveblocksCollaborationOptions {
 }
 
 /**
- * Fallback collaboration hook when Liveblocks is not configured
- * Provides the same API but without actual collaboration features
- * The app works in "solo mode" - all changes are saved locally only
+ * Real-time collaboration hook - SOLO MODE VERSION
+ * This version doesn't use Liveblocks (for when environment variable is not set)
+ * All changes are saved locally only
+ * For real-time collaboration, add LIVEBLOCKS_SECRET_KEY to your environment
  */
 export function useLiveblocksCollaboration({
   fileName,
@@ -22,21 +23,21 @@ export function useLiveblocksCollaboration({
   onUserLeft,
   onFileSaved,
 }: LiveblocksCollaborationOptions) {
-  // Broadcast file changes (no-op when Liveblocks is disabled)
+  
+  // No-op broadcast (solo mode)
   const broadcastChange = useCallback(
     debounce((content: string, cursorPosition?: any) => {
-      // No-op: Liveblocks not configured
-      // In solo mode, changes are only saved locally via auto-save
+      // Solo mode - no broadcasting needed
+      console.log('� Solo mode: changes saved locally');
     }, 300),
     [fileName]
   );
 
-  // Notify others when file is saved (no-op when Liveblocks is disabled)
+  // No-op file saved notification (solo mode)
   const notifyFileSaved = useCallback(() => {
-    // No-op: Liveblocks not configured
+    // Solo mode - no notification needed
   }, [fileName]);
 
-  // Return disconnected state since Liveblocks is not available
   return {
     isConnected: false,
     connectionStatus: 'disconnected' as const,
