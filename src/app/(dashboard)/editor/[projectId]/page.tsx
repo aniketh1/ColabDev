@@ -15,7 +15,6 @@ import { LiveblocksProvider } from "@/components/LiveblocksProvider";
 import { useLiveblocksCollaboration } from "@/hooks/useLiveblocksCollaboration";
 import { cn } from "@/lib/utils";
 
-
 const CodeEditor = () => {
   const searchParams = useSearchParams();
   const file = searchParams?.get("file") || "";
@@ -28,13 +27,35 @@ const CodeEditor = () => {
   const editorViewRef = useRef<EditorView | null>(null);
   const isRemoteUpdateRef = useRef(false);
   const lastSyncedContentRef = useRef<string>("");
+  const isFetchingRef = useRef(false);
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   // Set up collaboration options
   const collaborationOptions = {
     fileName: file || '',
     onContentUpdate: (newContent: string) => {
-      // Store the remote update but DON'T force update the editor
-      // The editor will naturally show the content on next file open
+      // Handle remote content updates from other collaborators
+      if (editorViewRef.current && newContent !== editorViewRef.current.state.doc.toString()) {
+        isRemoteUpdateRef.current = true;
+        
+        // Update editor content
+        const transaction = editorViewRef.current.state.update({
+          changes: {
+            from: 0,
+            to: editorViewRef.current.state.doc.length,
+            insert: newContent
+          }
+        });
+        
+        editorViewRef.current.dispatch(transaction);
+        
+        // Reset flag after a short delay
+        setTimeout(() => {
+          isRemoteUpdateRef.current = false;
+        }, 100);
+      }
+      
       lastSyncedContentRef.current = newContent;
       setCode(newContent);
     },
@@ -42,14 +63,18 @@ const CodeEditor = () => {
       toast.success(`👤 ${userInfo?.name || 'A collaborator'} joined`, { duration: 2000 });
     },
     onUserLeft: () => {
-      toast.info('👋 A collaborator left', { duration: 2000 });
+      toast.info(`👋 A collaborator left`, { duration: 2000 });
     },
+    onFileSaved: () => {
+      // Refresh content when another user saves
+      if (!isSaving && file && projectId) {
+        console.log('🔄 File saved by another user, refreshing...');
+        fetchData();
+      }
+    }
   };
 
-  // Use real Liveblocks collaboration if available, otherwise use fallback
-  // We always use the fallback hook for now to avoid RoomProvider errors
-  // The fallback hook works fine for basic functionality
-  // TODO: Implement proper conditional hook usage when Liveblocks is fully integrated
+  // Use Liveblocks collaboration hook
   const { isConnected, broadcastChange, notifyFileSaved } = useLiveblocksCollaboration(collaborationOptions);
 
   const ref = useCallback((node: HTMLElement | null) => {
@@ -59,6 +84,14 @@ const CodeEditor = () => {
 
   const fetchData = useCallback(async () => {
     if (!file || !projectId) return;
+    
+    // Cancel any in-flight request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    
+    // Create new abort controller for this request
+    abortControllerRef.current = new AbortController();
     
     const payload = {
       projectId: projectId,
@@ -70,27 +103,34 @@ const CodeEditor = () => {
     try {
       setIsLoading(true);
       const response = await Axios.post("/api/code", payload, {
-        timeout: 10000, // 10 second timeout
+        timeout: 10000,
+        signal: abortControllerRef.current.signal
       });
 
       if (response.status === 200) {
-        const fileContent = response?.data?.data?.content;
+        const fileContent = response?.data?.data?.content || '';
+        const newFileId = response?.data?.data?._id;
+        
         console.log('✅ File content received:', {
           file,
-          contentLength: fileContent?.length || 0,
-          fileId: response?.data?.data?._id
+          contentLength: fileContent.length,
+          fileId: newFileId
         });
-        setContent(fileContent || '');
-        setFileId(response?.data?.data?._id);
+        
+        setContent(fileContent);
+        setFileId(newFileId);
+        lastSyncedContentRef.current = fileContent;
+        
         // Sync with EditorProvider for preview
-        setCode(fileContent || '');
+        setCode(fileContent);
       }
     } catch (error: any) {
-      // Don't show error toast for aborted requests (normal when switching files)
-      if (error.code === 'ECONNABORTED' || error.code === 'ERR_CANCELED') {
+      // Don't show error for aborted requests (normal when switching files)
+      if (error.code === 'ERR_CANCELED' || error.name === 'CanceledError') {
         console.log('⏭️ Request cancelled (normal - switching files)');
         return;
       }
+      
       console.error('❌ Error fetching file:', {
         file,
         projectId,
@@ -100,15 +140,20 @@ const CodeEditor = () => {
         message: error?.message,
         code: error?.code
       });
+      
       const errorMessage = error?.response?.data?.error || error?.message || 'Failed to load file';
       toast.error(errorMessage);
-      // Set empty content on error so editor doesn't break
+      
+      // Set empty content on error
       setContent('');
       setCode('');
+      setFileId(undefined);
     } finally {
       setIsLoading(false);
+      abortControllerRef.current = null;
     }
-  }, [file, projectId, setIsLoading, setCode]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [file, projectId]);
 
   const updateData = async (fileContent: string) => {
     // Don't save if user doesn't have edit access
@@ -123,6 +168,12 @@ const CodeEditor = () => {
       return;
     }
 
+    // Don't save if content hasn't changed
+    if (fileContent === lastSyncedContentRef.current) {
+      console.log('⏭️ Save skipped - content unchanged');
+      return;
+    }
+
     const payload = {
       fileId: fileId,
       content: fileContent,
@@ -131,16 +182,21 @@ const CodeEditor = () => {
     console.log('💾 Saving file:', {
       file,
       fileId,
-      contentLength: fileContent?.length || 0
+      contentLength: fileContent.length
     });
     
     try {
+      setIsSaving(true);
       const response = await Axios.put("/api/code", payload);
 
       if (response.status === 200) {
         console.log('✅ File saved successfully');
+        lastSyncedContentRef.current = fileContent;
+        
         // Notify other collaborators that file was saved
         notifyFileSaved();
+        
+        toast.success('File saved', { duration: 1000 });
       }
     } catch (error: any) {
       console.error('❌ Save failed:', {
@@ -149,6 +205,7 @@ const CodeEditor = () => {
         fileId,
         file
       });
+      
       if (error.response?.status === 403) {
         toast.error('You don\'t have permission to edit this file', { duration: 3000 });
       } else if (error.response?.status === 400) {
@@ -156,20 +213,26 @@ const CodeEditor = () => {
       } else {
         toast.error('Failed to save changes');
       }
+    } finally {
+      setIsSaving(false);
     }
   };
 
-  const extensionArray = file?.split(".") || [];
-  const extension = extensionArray[extensionArray?.length - 1];
+  // Create debounced save function
+  const updateDataDebounce = useRef(
+    debounce((doc: string) => {
+      updateData(doc);
+    }, 2000)
+  ).current;
 
-  console.log("extension", extension);
-
-  // Only fetch when file or projectId changes, not when fetchData function changes
-  // Use ref to track if we're already fetching to prevent multiple simultaneous requests
-  const isFetchingRef = useRef(false);
-  
+  // Fetch file content when file or projectId changes
   useEffect(() => {
-    if (!file || !projectId) return;
+    if (!file || !projectId) {
+      setContent('');
+      setFileId(undefined);
+      setCode('');
+      return;
+    }
     
     // Prevent multiple simultaneous fetches
     if (isFetchingRef.current) {
@@ -182,16 +245,16 @@ const CodeEditor = () => {
       isFetchingRef.current = false;
     });
     
+    // Cleanup on unmount or file change
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [file, projectId]);
 
-  
-  const updateDataDebounce = useRef(
-    debounce((doc: string) => {
-      updateData(doc);
-    }, 2000)
-  ).current;
-
+  // Initialize CodeMirror editor
   useEffect(() => {
     if (!element || !file) return;
 
@@ -199,11 +262,22 @@ const CodeEditor = () => {
     const extensionArray = file.split(".");
     const extension = extensionArray[extensionArray.length - 1];
 
+    console.log("File extension:", extension);
+
     // Create extensions array
     const extensions: any[] = [
       basicSetup,
       // Add read-only mode if user can't edit
-      ...(projectAccess.canEdit ? [] : [EditorView.editable.of(false)]),
+      EditorView.editable.of(projectAccess.canEdit),
+      // Styling
+      EditorView.theme({
+        "&": { height: "100%" },
+        ".cm-scroller": { overflow: "auto" },
+        ".cm-content": { 
+          fontFamily: "'Fira Code', 'Monaco', 'Courier New', monospace",
+          fontSize: "14px"
+        }
+      }),
       // Language support
       extension === "js"
         ? javascript()
@@ -225,7 +299,7 @@ const CodeEditor = () => {
             }),
     ];
 
-    // Only add update listener if user can edit
+    // Add update listener for editable mode
     if (projectAccess.canEdit) {
       extensions.push(
         EditorView.updateListener.of((update) => {
@@ -261,10 +335,7 @@ const CodeEditor = () => {
       view.destroy();
       editorViewRef.current = null;
     };
-    // Deliberately excluding broadcastChange, setCode, and updateDataDebounce
-    // as they are stable refs and don't need to trigger re-renders
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [file, element, content, projectAccess.canEdit]);
+  }, [file, element, content, projectAccess.canEdit, setCode, broadcastChange, updateDataDebounce]);
 
   return (
     <div className="h-full w-full p-3">
@@ -304,11 +375,12 @@ const CodeEditor = () => {
             </div>
           )}
           
-          {/* Collaboration Status Indicator */}
+          {/* Status Indicators */}
           <div className={cn(
             "absolute z-20 flex items-center gap-2",
             !projectAccess.canEdit ? "top-14 right-3" : "top-3 right-3"
           )}>
+            {/* Collaboration Status */}
             <div className={cn(
               "flex items-center gap-2 backdrop-blur-xl px-4 py-2 rounded-xl shadow-lg border transition-all duration-300",
               isConnected 
@@ -323,7 +395,9 @@ const CodeEditor = () => {
                 {isConnected ? 'LIVE' : 'OFFLINE'}
               </span>
             </div>
-            {isLoading && (
+            
+            {/* Saving Indicator */}
+            {isSaving && (
               <div className="flex items-center gap-2 bg-gradient-to-r from-primary/10 to-blue-500/10 backdrop-blur-xl px-4 py-2 rounded-xl shadow-lg border border-primary/30">
                 <svg className="animate-spin h-3.5 w-3.5 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -334,6 +408,7 @@ const CodeEditor = () => {
             )}
           </div>
           
+          {/* Editor Container */}
           <div
             className={cn(
               "relative h-full w-full overflow-auto bg-gradient-to-br from-background via-background to-muted/10",
@@ -351,6 +426,14 @@ const CodeEditor = () => {
 export default function EditorPage() {
   const params = useParams();
   const projectId = params?.projectId as string;
+  
+  if (!projectId) {
+    return (
+      <div className="h-full flex items-center justify-center">
+        <p className="text-muted-foreground">Invalid project ID</p>
+      </div>
+    );
+  }
   
   return (
     <LiveblocksProvider roomId={`project-${projectId}`}>
