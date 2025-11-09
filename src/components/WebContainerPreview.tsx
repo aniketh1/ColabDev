@@ -67,6 +67,8 @@ export function WebContainerPreview({ projectId, techStack, files }: WebContaine
         }
 
         addLog('Mounting project files...');
+        console.log('📁 File tree structure:', fileTree);
+        console.log('📝 User files received:', Object.keys(files));
         await container.mount(fileTree);
         addLog('✅ Files mounted');
 

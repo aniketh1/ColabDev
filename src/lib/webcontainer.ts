@@ -85,28 +85,37 @@ export default defineConfig({
     },
   };
 
-  // Add all user files to the src directory
+  // Add all user files to the appropriate directory
   Object.entries(files).forEach(([fileName, content]) => {
     if (!fileName.startsWith('.') && !fileName.includes('node_modules')) {
-      const path = fileName.split('/');
-      
-      if (path.length === 1) {
-        // Root level file in src
-        fileTree.src.directory[fileName] = {
+      // Check if file starts with src/ (e.g., "src/App.jsx")
+      if (fileName.startsWith('src/')) {
+        // Remove the 'src/' prefix since we already have a src directory
+        const relativePath = fileName.substring(4); // Remove "src/"
+        const pathParts = relativePath.split('/');
+        
+        let current = fileTree.src.directory;
+        
+        // Navigate/create nested directories
+        for (let i = 0; i < pathParts.length - 1; i++) {
+          if (!current[pathParts[i]]) {
+            current[pathParts[i]] = { directory: {} };
+          }
+          current = current[pathParts[i]].directory;
+        }
+        
+        // Add the file
+        current[pathParts[pathParts.length - 1]] = {
           file: { contents: content },
         };
       } else {
-        // Nested directory structure
-        let current = fileTree.src.directory;
-        for (let i = 0; i < path.length - 1; i++) {
-          if (!current[path[i]]) {
-            current[path[i]] = { directory: {} };
-          }
-          current = current[path[i]].directory;
+        // Root level files (like package.json, vite.config.js, index.html)
+        // Skip them as we're creating our own
+        if (!['package.json', 'vite.config.js', 'index.html'].includes(fileName)) {
+          fileTree[fileName] = {
+            file: { contents: content },
+          };
         }
-        current[path[path.length - 1]] = {
-          file: { contents: content },
-        };
       }
     }
   });
@@ -179,26 +188,37 @@ export default defineConfig({
     },
   };
 
-  // Add all user files
+  // Add all user files to the appropriate directory
   Object.entries(files).forEach(([fileName, content]) => {
     if (!fileName.startsWith('.') && !fileName.includes('node_modules')) {
-      const path = fileName.split('/');
-      
-      if (path.length === 1) {
-        fileTree.src.directory[fileName] = {
+      // Check if file starts with src/ (e.g., "src/App.vue")
+      if (fileName.startsWith('src/')) {
+        // Remove the 'src/' prefix since we already have a src directory
+        const relativePath = fileName.substring(4); // Remove "src/"
+        const pathParts = relativePath.split('/');
+        
+        let current = fileTree.src.directory;
+        
+        // Navigate/create nested directories
+        for (let i = 0; i < pathParts.length - 1; i++) {
+          if (!current[pathParts[i]]) {
+            current[pathParts[i]] = { directory: {} };
+          }
+          current = current[pathParts[i]].directory;
+        }
+        
+        // Add the file
+        current[pathParts[pathParts.length - 1]] = {
           file: { contents: content },
         };
       } else {
-        let current = fileTree.src.directory;
-        for (let i = 0; i < path.length - 1; i++) {
-          if (!current[path[i]]) {
-            current[path[i]] = { directory: {} };
-          }
-          current = current[path[i]].directory;
+        // Root level files (like package.json, vite.config.js, index.html)
+        // Skip them as we're creating our own
+        if (!['package.json', 'vite.config.js', 'index.html'].includes(fileName)) {
+          fileTree[fileName] = {
+            file: { contents: content },
+          };
         }
-        current[path[path.length - 1]] = {
-          file: { contents: content },
-        };
       }
     }
   });

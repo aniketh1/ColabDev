@@ -92,8 +92,14 @@ const BrowerRunCode = ({ children }: { children: React.ReactNode }) => {
               onMouseUp={handleMouseUp}
               className="bg-primary h-7 flex items-center cursor-grab px-1"
             >
+              <span className="text-white text-xs font-medium ml-2">
+                {useWebContainer 
+                  ? `${projectData?.techStack?.toUpperCase()} Preview` 
+                  : 'HTML Preview'
+                }
+              </span>
               <X
-                className="ml-auto cursor-pointer"
+                className="ml-auto cursor-pointer text-white"
                 onClick={() => setOpenBrowser(false)}
               />
             </div>
