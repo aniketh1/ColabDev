@@ -182,37 +182,37 @@ export async function GET(request: NextRequest) {
         }
       };
 
-      const viteConfig = techStack === 'react' 
-        ? \`import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-
-export default defineConfig({
-  plugins: [react()],
-  server: { port: 3000 }
-})\`
-        : \`import { defineConfig } from 'vite'
-import vue from '@vitejs/plugin-vue'
-
-export default defineConfig({
-  plugins: [vue()],
-  server: { port: 3000 }
-})\`;
+      const viteConfigReact = "import { defineConfig } from 'vite'\\n" +
+        "import react from '@vitejs/plugin-react'\\n\\n" +
+        "export default defineConfig({\\n" +
+        "  plugins: [react()],\\n" +
+        "  server: { port: 3000 }\\n" +
+        "})";
+      
+      const viteConfigVue = "import { defineConfig } from 'vite'\\n" +
+        "import vue from '@vitejs/plugin-vue'\\n\\n" +
+        "export default defineConfig({\\n" +
+        "  plugins: [vue()],\\n" +
+        "  server: { port: 3000 }\\n" +
+        "})";
+      
+      const viteConfig = techStack === 'react' ? viteConfigReact : viteConfigVue;
 
       const mainExt = techStack === 'react' ? 'jsx' : 'js';
       const techStackTitle = techStack.charAt(0).toUpperCase() + techStack.slice(1);
       
-      const indexHtml = \`<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>\${techStackTitle} Preview</title>
-</head>
-<body>
-  <div id="root"></div>
-  <script type="module" src="/src/main.\${mainExt}"></script>
-</body>
-</html>\`;
+      const indexHtml = "<!DOCTYPE html>\\n" +
+        "<html lang=\\"en\\">\\n" +
+        "<head>\\n" +
+        "  <meta charset=\\"UTF-8\\" />\\n" +
+        "  <meta name=\\"viewport\\" content=\\"width=device-width, initial-scale=1.0\\">\\n" +
+        "  <title>" + techStackTitle + " Preview</title>\\n" +
+        "</head>\\n" +
+        "<body>\\n" +
+        "  <div id=\\"root\\"></div>\\n" +
+        "  <script type=\\"module\\" src=\\"/src/main." + mainExt + "\\"></script>\\n" +
+        "</body>\\n" +
+        "</html>";
 
       const fileTree = {
         'package.json': { 

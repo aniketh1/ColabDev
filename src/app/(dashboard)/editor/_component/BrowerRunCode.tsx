@@ -161,13 +161,44 @@ const BrowerRunCode = ({ children }: { children: React.ReactNode }) => {
                       </p>
                     </div>
                     <button
-                      onClick={() => {
-                        const previewUrl = `/api/preview?projectId=${projectId}&techStack=${projectData.techStack}`;
-                        window.open(previewUrl, '_blank', 'width=1200,height=800');
+                      onClick={async () => {
+                        // Create CodeSandbox directly
+                        const sandboxFiles: any = {};
+                        
+                        if (projectData.techStack === 'react') {
+                          sandboxFiles['package.json'] = {
+                            content: JSON.stringify({
+                              name: 'react-preview',
+                              dependencies: { react: '^18.2.0', 'react-dom': '^18.2.0' },
+                              devDependencies: { '@vitejs/plugin-react': '^4.0.0', vite: 'latest' },
+                            }, null, 2),
+                          };
+                          sandboxFiles['index.html'] = {
+                            content: `<!DOCTYPE html>\n<html>\n<head><meta charset="UTF-8"/><title>React App</title></head>\n<body><div id="root"></div><script type="module" src="/src/main.jsx"></script></body>\n</html>`,
+                          };
+                        } else if (projectData.techStack === 'vue') {
+                          sandboxFiles['package.json'] = {
+                            content: JSON.stringify({
+                              name: 'vue-preview',
+                              dependencies: { vue: '^3.3.4' },
+                              devDependencies: { '@vitejs/plugin-vue': '^4.2.3', vite: 'latest' },
+                            }, null, 2),
+                          };
+                          sandboxFiles['index.html'] = {
+                            content: `<!DOCTYPE html>\n<html>\n<head><meta charset="UTF-8"/><title>Vue App</title></head>\n<body><div id="app"></div><script type="module" src="/src/main.js"></script></body>\n</html>`,
+                          };
+                        }
+                        
+                        Object.entries(projectData.files).forEach(([name, content]) => {
+                          sandboxFiles[name] = { content };
+                        });
+                        
+                        const params = btoa(JSON.stringify({ files: sandboxFiles }));
+                        window.open(`https://codesandbox.io/api/v1/sandboxes/define?parameters=${params}`, '_blank');
                       }}
                       className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 transform hover:scale-105 shadow-lg"
                     >
-                      Open Preview in New Tab
+                      Open in CodeSandbox (Free)
                     </button>
                     <p className="mt-4 text-xs text-gray-500 dark:text-gray-400">
                       The preview will open with a full Node.js environment running in your browser
