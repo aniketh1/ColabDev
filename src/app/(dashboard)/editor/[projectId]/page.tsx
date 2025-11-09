@@ -74,17 +74,27 @@ const CodeEditor = () => {
       fileName: file,
     };
     try {
+      setIsLoading(true);
+      console.log('Fetching file:', file, 'for project:', projectId);
       const response = await Axios.post("/api/code", payload);
 
       if (response.status === 200) {
         const fileContent = response?.data?.data?.content;
-        setContent(fileContent);
+        console.log('File content received, length:', fileContent?.length);
+        setContent(fileContent || '');
         setFileId(response?.data?.data?._id);
         // Sync with EditorProvider for preview
         setCode(fileContent || '');
       }
     } catch (error: any) {
-      toast.error(error.response.data.error);
+      console.error('Error fetching file:', error);
+      const errorMessage = error?.response?.data?.error || error?.message || 'Failed to load file';
+      toast.error(errorMessage);
+      // Set empty content on error so editor doesn't break
+      setContent('');
+      setCode('');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -183,7 +193,12 @@ const CodeEditor = () => {
 
   return (
     <div className="h-full w-full p-3">
-      {!file ? (
+      {isLoading ? (
+        <div className="h-full flex items-center justify-center flex-col bg-gradient-to-br from-card via-card to-muted/30 rounded-xl p-8 border border-border/50 backdrop-blur-sm">
+          <div className="h-12 w-12 rounded-full border-3 border-primary/30 border-t-primary animate-spin mb-4" />
+          <p className="text-sm text-muted-foreground">Loading file content...</p>
+        </div>
+      ) : !file ? (
         <div className="h-full flex items-center justify-center flex-col bg-gradient-to-br from-card via-card to-muted/30 rounded-xl p-8 border border-border/50 backdrop-blur-sm">
           <div className="relative">
             <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-primary/10 to-transparent rounded-full blur-3xl" />
