@@ -41,13 +41,14 @@ export function useLiveblocksCollaborationReal({
   // Broadcast file changes to other users
   const broadcastChange = useCallback(
     debounce((content: string, cursorPosition?: any) => {
+      console.log('📡 Broadcast change called with content length:', content.length, 'for file:', fileName);
       if (status !== 'connected') {
         console.log('⚠️ Liveblocks not connected, skipping broadcast');
         return;
       }
 
       if (fileName && !isRemoteUpdateRef.current) {
-        console.log('📤 Broadcasting change via Liveblocks:', fileName);
+        console.log('📤 Broadcasting change via Liveblocks:', fileName, 'content length:', content.length);
         broadcast({
           type: 'file-change',
           fileName,

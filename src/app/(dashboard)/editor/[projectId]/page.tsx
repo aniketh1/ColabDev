@@ -92,7 +92,9 @@ const CodeEditor = () => {
         console.log('✅ File content received:', {
           file,
           contentLength: fileContent.length,
-          fileId: newFileId
+          fileId: newFileId,
+          contentPreview: fileContent.substring(0, 100) + (fileContent.length > 100 ? '...' : ''),
+          responseData: response.data
         });
         
         setContent(fileContent);
@@ -139,14 +141,15 @@ const CodeEditor = () => {
     const currentAccess = projectAccessRef.current;
     const currentFileId = fileIdRef.current;
     const currentFile = fileRef.current;
-    
+
     console.log('💾 saveToServer called with current state:', {
       canEdit: currentAccess.canEdit,
       isOwner: currentAccess.isOwner,
       isCollaborator: currentAccess.isCollaborator,
       fileId: currentFileId,
       file: currentFile,
-      contentLength: fileContent.length
+      contentLength: fileContent.length,
+      contentPreview: fileContent.substring(0, 100) + (fileContent.length > 100 ? '...' : '')
     });
 
     // Don't save if user doesn't have edit access
@@ -171,17 +174,26 @@ const CodeEditor = () => {
       fileId: currentFileId,
       content: fileContent,
     };
-    
-    console.log('💾 Actually saving file now...');
-    
+
+    console.log('💾 Actually saving file now...', {
+      payload: {
+        fileId: payload.fileId,
+        contentLength: payload.content.length,
+        contentPreview: payload.content.substring(0, 100) + (payload.content.length > 100 ? '...' : '')
+      }
+    });
+
     try {
       setIsSaving(true);
       const response = await Axios.put("/api/code", payload);
 
       if (response.status === 200) {
-        console.log('✅ File saved successfully');
+        console.log('✅ File saved successfully', {
+          responseData: response.data,
+          newLastSyncedLength: fileContent.length
+        });
         lastSyncedContentRef.current = fileContent;
-        
+
         toast.success('File saved', { duration: 1000 });
       }
     } catch (error: any) {
@@ -189,9 +201,10 @@ const CodeEditor = () => {
         status: error.response?.status,
         error: error.response?.data?.error,
         fileId: currentFileId,
-        file: currentFile
+        file: currentFile,
+        responseData: error.response?.data
       });
-      
+
       if (error.response?.status === 403) {
         toast.error('You don\'t have permission to edit this file', { duration: 3000 });
       } else if (error.response?.status === 400) {
@@ -207,6 +220,7 @@ const CodeEditor = () => {
   // Create stable debounced save function once
   const debouncedSave = useRef(
     debounce((content: string) => {
+      console.log('⏰ Debounced save triggered for content length:', content.length);
       saveToServer(content);
     }, 2000)
   ).current;
@@ -302,6 +316,12 @@ const CodeEditor = () => {
   useEffect(() => {
     if (!element || !file) return;
 
+    console.log('🔄 Creating CodeMirror editor for file:', file, 'with dependencies:', {
+      file,
+      element: !!element,
+      projectAccessCanEdit: projectAccessRef.current.canEdit
+    });
+
     // Determine language based on file extension
     const extensionArray = file.split(".");
     const extension = extensionArray[extensionArray.length - 1];
@@ -348,6 +368,13 @@ const CodeEditor = () => {
       EditorView.updateListener.of((update) => {
         if (update.docChanged && !isRemoteUpdateRef.current) {
           const newContent = update.state.doc.toString();
+
+          console.log('⌨️ User typed - content changed:', {
+            oldLength: update.startState.doc.length,
+            newLength: newContent.length,
+            changePreview: newContent.substring(0, 50) + (newContent.length > 50 ? '...' : ''),
+            isRemoteUpdate: isRemoteUpdateRef.current
+          });
 
           // Update current editor content ref
           currentEditorContentRef.current = newContent;
@@ -402,6 +429,11 @@ const CodeEditor = () => {
   // Update editable state when project access changes
   useEffect(() => {
     if (!editorViewRef.current) return;
+
+    console.log('🔧 Reconfiguring editor for permission change:', {
+      canEdit: projectAccess.canEdit,
+      file
+    });
 
     // Create new extensions with updated editable state
     const extensionArray = file.split(".");
