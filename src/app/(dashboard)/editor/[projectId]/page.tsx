@@ -211,6 +211,9 @@ const CodeEditor = () => {
     }, 2000)
   ).current;
 
+  // Memoize the debounced save to prevent recreation
+  const memoizedDebouncedSave = useCallback(debouncedSave, []);
+
   // Set up collaboration options
   const collaborationOptions = {
     fileName: file || '',
@@ -377,7 +380,7 @@ const CodeEditor = () => {
       view.destroy();
       editorViewRef.current = null;
     };
-  }, [file, element, setCode, broadcastChange, debouncedSave]);
+  }, [file, element, setCode, broadcastChange]);
 
   // Update editor content when it changes (without recreating editor)
   useEffect(() => {
@@ -432,32 +435,14 @@ const CodeEditor = () => {
                   parser: javascriptLanguage.parser,
                 },
               ],
-            }),
-      // Keep the update listener
-      EditorView.updateListener.of((update) => {
-        if (update.docChanged && !isRemoteUpdateRef.current) {
-          const newContent = update.state.doc.toString();
-
-          // Update current editor content ref
-          currentEditorContentRef.current = newContent;
-
-          // Update code in EditorProvider for preview
-          setCode(newContent);
-
-          // Broadcast changes to other collaborators (even in read-only, for live preview)
-          broadcastChange(newContent);
-
-          // Auto-save to database after 2 seconds (saveToServer checks canEdit via ref)
-          debouncedSave(newContent);
-        }
-      })
+            })
     ];
 
     // Reconfigure the editor with new extensions
     editorViewRef.current.dispatch({
       reconfigure: { extensions: newExtensions }
     });
-  }, [projectAccess.canEdit, file, setCode, broadcastChange, debouncedSave]);
+  }, [projectAccess.canEdit, file, setCode, broadcastChange]);
 
   return (
     <div className="h-full w-full p-3">

@@ -58,7 +58,7 @@ export function useLiveblocksCollaborationReal({
       }
       isRemoteUpdateRef.current = false;
     }, 300),
-    [broadcast, status, fileName]
+    [broadcast, fileName]
   );
 
   // Notify others when file is saved
@@ -72,7 +72,7 @@ export function useLiveblocksCollaborationReal({
       type: 'file-saved',
       fileName,
     });
-  }, [broadcast, status, fileName]);
+  }, [broadcast, fileName]);
 
   // Update presence with current file
   useEffect(() => {
