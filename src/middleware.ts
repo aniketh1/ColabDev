@@ -12,6 +12,7 @@ export default withAuth(
         )){
             return NextResponse.redirect(new URL("/dashboard",req.url))
         }
+        
         return NextResponse.next()
     },
     {

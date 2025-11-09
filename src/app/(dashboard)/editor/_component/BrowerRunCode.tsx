@@ -147,11 +147,33 @@ const BrowerRunCode = ({ children }: { children: React.ReactNode }) => {
                   </div>
                 </div>
               ) : useWebContainer && projectData ? (
-                <WebContainerPreview
-                  projectId={projectId as string}
-                  techStack={projectData.techStack}
-                  files={projectData.files}
-                />
+                <div className="flex flex-col items-center justify-center h-full p-8 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-800 dark:to-gray-900">
+                  <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-8 max-w-md text-center">
+                    <div className="mb-6">
+                      <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <ExternalLink className="w-8 h-8 text-white" />
+                      </div>
+                      <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                        {projectData.techStack.toUpperCase()} Preview
+                      </h3>
+                      <p className="text-gray-600 dark:text-gray-300 text-sm">
+                        WebContainer previews run in a separate window with special CORS headers
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => {
+                        const previewUrl = `/api/preview?projectId=${projectId}&techStack=${projectData.techStack}`;
+                        window.open(previewUrl, '_blank', 'width=1200,height=800');
+                      }}
+                      className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 transform hover:scale-105 shadow-lg"
+                    >
+                      Open Preview in New Tab
+                    </button>
+                    <p className="mt-4 text-xs text-gray-500 dark:text-gray-400">
+                      The preview will open with a full Node.js environment running in your browser
+                    </p>
+                  </div>
+                </div>
               ) : refresh && (
                 <iframe
                   className="w-full h-full min-h-full min-w-full"

@@ -14,25 +14,8 @@ const nextConfig: NextConfig = {
       'node_modules/@esbuild/linux-x64',
     ],
   },
-  // Required headers for WebContainer API
-  async headers() {
-    return [
-      {
-        // Apply these headers to all routes
-        source: '/:path*',
-        headers: [
-          {
-            key: 'Cross-Origin-Embedder-Policy',
-            value: 'require-corp',
-          },
-          {
-            key: 'Cross-Origin-Opener-Policy',
-            value: 'same-origin',
-          },
-        ],
-      },
-    ];
-  },
+  // Note: WebContainer requires CORS headers (Cross-Origin-Embedder-Policy and Cross-Origin-Opener-Policy)
+  // but these headers break Next-Auth. We'll use an alternative approach with a separate preview page.
 };
 
 export default nextConfig;
