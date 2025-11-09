@@ -193,8 +193,9 @@ const BrowerRunCode = ({ children }: { children: React.ReactNode }) => {
                           sandboxFiles[name] = { content };
                         });
                         
-                        const params = btoa(JSON.stringify({ files: sandboxFiles }));
-                        window.open(`https://codesandbox.io/api/v1/sandboxes/define?parameters=${params}`, '_blank');
+                        // Use encodeURIComponent for Unicode safety instead of btoa
+                        const compressed = encodeURIComponent(JSON.stringify({ files: sandboxFiles }));
+                        window.open(`https://codesandbox.io/api/v1/sandboxes/define?json=${compressed}`, '_blank');
                       }}
                       className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 transform hover:scale-105 shadow-lg"
                     >
