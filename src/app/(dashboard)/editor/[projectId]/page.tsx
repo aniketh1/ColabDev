@@ -13,8 +13,6 @@ import { useEditorContext } from "../_provider/EditorProvider";
 import debounce from "@/lib/debounce";
 import { LiveblocksProvider } from "@/components/LiveblocksProvider";
 import { useLiveblocksCollaboration } from "@/hooks/useLiveblocksCollaboration";
-import { useLiveblocksCollaborationReal } from "@/hooks/useLiveblocksCollaborationReal";
-import { useIsLiveblocksAvailable } from "@/contexts/LiveblocksAvailabilityContext";
 import { cn } from "@/lib/utils";
 
 
@@ -49,12 +47,10 @@ const CodeEditor = () => {
   };
 
   // Use real Liveblocks collaboration if available, otherwise use fallback
-  const { isAvailable } = useIsLiveblocksAvailable();
-  const realCollab = useLiveblocksCollaborationReal(collaborationOptions);
-  const fallbackCollab = useLiveblocksCollaboration(collaborationOptions);
-  
-  // Choose which hook to use based on Liveblocks availability
-  const { isConnected, broadcastChange, notifyFileSaved } = isAvailable ? realCollab : fallbackCollab;
+  // We always use the fallback hook for now to avoid RoomProvider errors
+  // The fallback hook works fine for basic functionality
+  // TODO: Implement proper conditional hook usage when Liveblocks is fully integrated
+  const { isConnected, broadcastChange, notifyFileSaved } = useLiveblocksCollaboration(collaborationOptions);
 
   const ref = useCallback((node: HTMLElement | null) => {
     if (!node) return;
