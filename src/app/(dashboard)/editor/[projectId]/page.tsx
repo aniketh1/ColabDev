@@ -13,6 +13,8 @@ import { useEditorContext } from "../_provider/EditorProvider";
 import debounce from "@/lib/debounce";
 import { LiveblocksProvider } from "@/components/LiveblocksProvider";
 import { useLiveblocksCollaboration } from "@/hooks/useLiveblocksCollaboration";
+import { useLiveblocksCollaborationReal } from "@/hooks/useLiveblocksCollaborationReal";
+import { useIsLiveblocksAvailable } from "@/contexts/LiveblocksAvailabilityContext";
 import { cn } from "@/lib/utils";
 
 
@@ -46,9 +48,13 @@ const CodeEditor = () => {
     },
   };
 
-  // Always use fallback collaboration (it works with or without Liveblocks)
-  // The real-time features will work once Liveblocks is fully loaded
-  const { isConnected, broadcastChange, notifyFileSaved } = useLiveblocksCollaboration(collaborationOptions);
+  // Use real Liveblocks collaboration if available, otherwise use fallback
+  const { isAvailable } = useIsLiveblocksAvailable();
+  const realCollab = useLiveblocksCollaborationReal(collaborationOptions);
+  const fallbackCollab = useLiveblocksCollaboration(collaborationOptions);
+  
+  // Choose which hook to use based on Liveblocks availability
+  const { isConnected, broadcastChange, notifyFileSaved } = isAvailable ? realCollab : fallbackCollab;
 
   const ref = useCallback((node: HTMLElement | null) => {
     if (!node) return;
