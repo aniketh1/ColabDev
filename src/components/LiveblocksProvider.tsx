@@ -42,15 +42,14 @@ export function LiveblocksProvider({ roomId, children }: LiveblocksProviderProps
       });
   }, [roomId]);
 
-  // Show loading state while checking
+  // Don't block the entire page - render children immediately
+  // Liveblocks will connect in the background if available
   if (isChecking) {
+    // Still checking, but don't block - render without collaboration
     return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Checking collaboration status...</p>
-        </div>
-      </div>
+      <LiveblocksAvailabilityProvider isAvailable={false}>
+        {children}
+      </LiveblocksAvailabilityProvider>
     );
   }
 
