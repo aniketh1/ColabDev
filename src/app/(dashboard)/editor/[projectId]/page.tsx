@@ -15,6 +15,7 @@ import { LiveblocksProvider } from "@/components/LiveblocksProvider";
 import { useLiveblocksCollaboration } from "@/hooks/useLiveblocksCollaboration";
 import { useLiveblocksCollaborationReal } from "@/hooks/useLiveblocksCollaborationReal";
 import { useIsLiveblocksAvailable } from "@/contexts/LiveblocksAvailabilityContext";
+import { cn } from "@/lib/utils";
 
 const CodeEditor = () => {
   const searchParams = useSearchParams();
@@ -175,40 +176,53 @@ const CodeEditor = () => {
   }, [file, element, content]);
 
   return (
-    <div className="p-2 pb-10">
+    <div className="h-full w-full p-3">
       {!file ? (
-        <div className="flex items-center justify-center flex-col bg-white rounded-md p-4 pb-7">
-          <Image
-            src={"/editor file.svg"}
-            width={320}
-            height={320}
-            alt="editor"
-          />
-          <p className="text-slate-400">No file is open</p>
+        <div className="h-full flex items-center justify-center flex-col bg-gradient-to-br from-card via-card to-muted/30 rounded-xl p-8 border border-border/50 backdrop-blur-sm">
+          <div className="relative">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-primary/10 to-transparent rounded-full blur-3xl" />
+            <Image
+              src={"/editor file.svg"}
+              width={280}
+              height={280}
+              alt="editor"
+              className="relative z-10"
+            />
+          </div>
+          <p className="text-muted-foreground text-lg mt-4">No file is open</p>
+          <p className="text-muted-foreground/70 text-sm mt-2">Select a file from the sidebar to start editing</p>
         </div>
       ) : (
-        <div className="relative">
+        <div className="relative h-full rounded-xl overflow-hidden border border-border/50 shadow-2xl bg-card">
           {/* Collaboration Status Indicator */}
-          <div className="absolute top-2 right-2 z-10 flex items-center gap-2">
-            <div className="flex items-center gap-1.5 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-sm border border-gray-200">
-              <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`}></div>
-              <span className="text-xs font-medium text-gray-700">
-                {isConnected ? 'Live' : 'Offline'}
+          <div className="absolute top-3 right-3 z-20 flex items-center gap-2">
+            <div className={cn(
+              "flex items-center gap-2 backdrop-blur-xl px-4 py-2 rounded-xl shadow-lg border transition-all duration-300",
+              isConnected 
+                ? "bg-gradient-to-r from-green-500/10 to-emerald-500/10 border-green-500/30" 
+                : "bg-card/95 border-border/50"
+            )}>
+              <div className={cn(
+                "w-2.5 h-2.5 rounded-full transition-all duration-300",
+                isConnected ? "bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)] animate-pulse" : "bg-muted-foreground/50"
+              )}></div>
+              <span className="text-xs font-semibold tracking-wide">
+                {isConnected ? 'LIVE' : 'OFFLINE'}
               </span>
             </div>
             {isLoading && (
-              <div className="flex items-center gap-1.5 bg-blue-500/90 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-sm text-white">
-                <svg className="animate-spin h-3 w-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <div className="flex items-center gap-2 bg-gradient-to-r from-primary/10 to-blue-500/10 backdrop-blur-xl px-4 py-2 rounded-xl shadow-lg border border-primary/30">
+                <svg className="animate-spin h-3.5 w-3.5 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
-                <span className="text-xs font-medium">Saving...</span>
+                <span className="text-xs font-semibold text-primary tracking-wide">SAVING...</span>
               </div>
             )}
           </div>
           
           <div
-            className="relative flex-1 h-full min-h-[calc(100vh-3.5rem)] bg-white w-full overflow-auto"
+            className="relative h-full w-full overflow-auto bg-gradient-to-br from-background via-background to-muted/10"
             ref={ref}
           ></div>
         </div>

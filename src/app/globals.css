@@ -40,38 +40,38 @@
 }
 
 .dark {
-  /* Dark mode - full black background */
-  --background: 0 0% 0%; /* Pure black */
+  /* Dark mode - premium dark theme matching logo */
+  --background: 220 15% 8%; /* Deep dark blue-gray */
   --foreground: 210 40% 98%;
-  --card: 0 0% 5%; /* Very dark gray for cards */
+  --card: 220 15% 10%; /* Slightly lighter than background */
   --card-foreground: 210 40% 98%;
-  --popover: 0 0% 5%;
+  --popover: 220 15% 10%;
   --popover-foreground: 210 40% 98%;
-  --primary: 204 70% 60%; /* Blue from logo */
-  --primary-foreground: 0 0% 0%;
-  --secondary: 0 0% 10%;
+  --primary: 204 70% 60%; /* Blue from logo #5DADE2 */
+  --primary-foreground: 220 15% 8%;
+  --secondary: 220 15% 15%;
   --secondary-foreground: 210 40% 98%;
-  --muted: 0 0% 10%;
-  --muted-foreground: 215 20.2% 65.1%;
-  --accent: 204 70% 53%; /* Darker blue */
+  --muted: 220 15% 15%;
+  --muted-foreground: 215 20.2% 70%;
+  --accent: 204 70% 53%; /* Darker blue #3498DB */
   --accent-foreground: 210 40% 98%;
-  --destructive: 0 62.8% 30.6%;
+  --destructive: 0 72% 55%;
   --destructive-foreground: 210 40% 98%;
-  --border: 0 0% 15%;
-  --input: 0 0% 15%;
+  --border: 220 15% 18%;
+  --input: 220 15% 18%;
   --ring: 204 70% 60%;
   --chart-1: 204 70% 60%;
   --chart-2: 160 60% 45%;
   --chart-3: 30 80% 55%;
   --chart-4: 280 65% 60%;
   --chart-5: 340 75% 55%;
-  --sidebar: 0 0% 5%;
+  --sidebar: 220 15% 10%;
   --sidebar-foreground: 210 40% 98%;
   --sidebar-primary: 204 70% 60%;
-  --sidebar-primary-foreground: 0 0% 0%;
-  --sidebar-accent: 0 0% 10%;
+  --sidebar-primary-foreground: 220 15% 8%;
+  --sidebar-accent: 220 15% 15%;
   --sidebar-accent-foreground: 210 40% 98%;
-  --sidebar-border: 0 0% 15%;
+  --sidebar-border: 220 15% 18%;
   --sidebar-ring: 204 70% 60%;
 }
 
@@ -80,17 +80,150 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: 'cv11', 'ss01';
+    font-variant-ligatures: common-ligatures;
   }
 }
 
-/**editor **/
-.cm-editor .cm-gutters {
-  @apply border-r-0 bg-primary/5 text-base;
+/* Premium scrollbar styling */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--primary) / 0.3) transparent;
 }
 
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: hsl(var(--primary) / 0.3);
+  border-radius: 5px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--primary) / 0.5);
+}
+
+/* Premium gradients */
+.gradient-primary {
+  background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%);
+}
+
+.gradient-card {
+  background: linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--muted) / 0.5) 100%);
+}
+
+/* Glass morphism */
+.glass {
+  background: hsl(var(--background) / 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid hsl(var(--border) / 0.5);
+}
+
+/* Shimmer effect */
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    hsl(var(--muted) / 0.1) 0%,
+    hsl(var(--primary) / 0.1) 50%,
+    hsl(var(--muted) / 0.1) 100%
+  );
+  background-size: 1000px 100%;
+  animation: shimmer 2s infinite linear;
+}
+
+/**editor **/
 .cm-editor {
-  @apply h-full w-full min-h-[calc(100vh-3.5rem)];
+  @apply h-full w-full;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.cm-editor .cm-gutters {
+  @apply border-r border-border/30;
+  background: linear-gradient(to right, hsl(var(--muted) / 0.3), hsl(var(--muted) / 0.1));
+  backdrop-filter: blur(8px);
+  padding-right: 8px;
+  min-width: 48px;
+}
+
+.cm-editor .cm-activeLineGutter {
+  @apply bg-primary/10;
+}
+
+.cm-editor .cm-activeLine {
+  background: hsl(var(--primary) / 0.05) !important;
+}
+
+.cm-editor .cm-selectionBackground {
+  background: hsl(var(--primary) / 0.15) !important;
+}
+
+.cm-editor .cm-focused .cm-selectionBackground {
+  background: hsl(var(--primary) / 0.2) !important;
+}
+
+.cm-editor .cm-cursor {
+  border-left: 2px solid hsl(var(--primary)) !important;
+}
+
+.cm-editor .cm-line {
+  padding: 0 8px;
+}
+
+.cm-editor .cm-scroller {
+  @apply overflow-auto;
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--primary) / 0.3) transparent;
+}
+
+.cm-editor .cm-scroller::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.cm-editor .cm-scroller::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.cm-editor .cm-scroller::-webkit-scrollbar-thumb {
+  background: hsl(var(--primary) / 0.3);
+  border-radius: 5px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+.cm-editor .cm-scroller::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--primary) / 0.5);
+  background-clip: padding-box;
+}
+
+/* Dark mode adjustments */
+.dark .cm-editor .cm-gutters {
+  background: linear-gradient(to right, hsl(var(--muted) / 0.5), hsl(var(--muted) / 0.2));
+}
+
+.dark .cm-editor .cm-activeLine {
+  background: hsl(var(--primary) / 0.08) !important;
 }
 
 

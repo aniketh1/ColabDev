@@ -81,57 +81,80 @@ const EditorSidebar = () => {
   }, []);
   
   return (
-    <Sidebar className="h-[calc(100vh-3.5rem)] max-h-[calc(100vh-3.5rem)] top-14">
-      <SidebarHeader className="bg-primary/10 flex flex-row items-center py-1">
-        <div className="">
-          <p>Files</p>
+    <Sidebar className="h-[calc(100vh-4rem)] max-h-[calc(100vh-4rem)] top-16 border-r border-border/50 backdrop-blur-sm bg-sidebar/95">
+      <SidebarHeader className="bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border-b border-border/50 flex flex-row items-center py-3 px-4">
+        <div className="flex items-center gap-2">
+          <div className="h-5 w-1 bg-gradient-to-b from-primary to-primary/50 rounded-full" />
+          <p className="font-semibold text-sm uppercase tracking-wide">Files</p>
         </div>
         <div className="ml-auto">
           <Dialog open={openAddFile} onOpenChange={setOpenAddFile}>
             <DialogTrigger asChild>
               <Button
-                size={"icon"}
-                variant={"ghost"}
-                className="cursor-pointer"
+                size="icon"
+                variant="ghost"
+                className="cursor-pointer h-8 w-8 rounded-lg hover:bg-primary/10 transition-all duration-200 group"
               >
-                <FilePlus />
+                <FilePlus className="h-4 w-4 group-hover:scale-110 transition-transform" />
               </Button>
             </DialogTrigger>
-            <DialogContent>
-              <DialogTitle>Add File</DialogTitle>
+            <DialogContent className="backdrop-blur-xl bg-background/95 border-border/50">
+              <DialogTitle className="flex items-center gap-2">
+                <div className="h-6 w-1 bg-gradient-to-b from-primary to-primary/50 rounded-full" />
+                Add New File
+              </DialogTitle>
               <Input
                 disabled={isLoading}
                 value={fileName ?? ""}
-                placeholder="Enter file name"
+                placeholder="Enter file name (e.g., index.html)"
                 onChange={(e) => setFileName(e.target.value)}
+                className="border-border/50 focus:border-primary transition-all"
               />
-              <Button disabled={isLoading} onClick={handleCreateFile}>
-                Add File
+              <Button 
+                disabled={isLoading} 
+                onClick={handleCreateFile}
+                className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 transition-all duration-300"
+              >
+                {isLoading ? "Creating..." : "Create File"}
               </Button>
             </DialogContent>
           </Dialog>
         </div>
       </SidebarHeader>
-      <SidebarContent>
+      <SidebarContent className="py-2">
         {isLoading ? (
-          <p className="text-gray-400 py-4 mx-auto w-fit">Loading...</p>
+          <div className="flex flex-col items-center justify-center py-8 gap-3">
+            <div className="h-8 w-8 rounded-full border-2 border-primary/30 border-t-primary animate-spin" />
+            <p className="text-muted-foreground text-sm">Loading files...</p>
+          </div>
         ) : fileList.length < 1 ? (
-          <p className="text-gray-400 py-4 mx-auto w-fit">No File</p>
+          <div className="flex flex-col items-center justify-center py-12 gap-3 px-4">
+            <div className="h-16 w-16 rounded-full bg-muted/50 flex items-center justify-center">
+              <File className="h-8 w-8 text-muted-foreground/50" />
+            </div>
+            <p className="text-muted-foreground text-sm text-center">No files yet</p>
+            <p className="text-muted-foreground/70 text-xs text-center">Click the + button to create your first file</p>
+          </div>
         ) : (
-          <SidebarMenu className="py-4">
+          <SidebarMenu className="gap-1 px-2">
             {fileList.map((file, index) => {
               return (
-                <SidebarMenuItem key={file?._id}  >
-                  <SidebarMenuButton className="cursor-pointer" onClick={()=> router.push(`/editor/${projectId}?file=${encodeURIComponent(file.name)}`)}>
-                    <div className="w-4 h-4">
-                        <Image
-                            alt={file.name}
-                            width={18}
-                            height={18}
-                            src={getFileIcon(file.extension) || ""}
-                        />
+                <SidebarMenuItem key={file?._id}>
+                  <SidebarMenuButton 
+                    className="cursor-pointer h-10 rounded-lg hover:bg-primary/10 transition-all duration-200 group relative overflow-hidden" 
+                    onClick={()=> router.push(`/editor/${projectId}?file=${encodeURIComponent(file.name)}`)}
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary/0 to-primary/0 group-hover:from-primary/5 group-hover:via-primary/10 group-hover:to-primary/5 transition-all duration-300" />
+                    <div className="w-5 h-5 flex-shrink-0 relative z-10">
+                      <Image
+                        alt={file.name}
+                        width={20}
+                        height={20}
+                        src={getFileIcon(file.extension) || ""}
+                        className="object-contain"
+                      />
                     </div>
-                    <p>{file.name}</p>
+                    <p className="text-sm truncate relative z-10">{file.name}</p>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               );

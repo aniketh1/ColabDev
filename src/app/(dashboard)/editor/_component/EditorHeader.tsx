@@ -19,6 +19,7 @@ import { useEditorContext } from "../_provider/EditorProvider";
 import { cn } from "@/lib/utils";
 import { RunCodeButton } from "@/components/RunCodeButton";
 import { ProjectTemplateSelector } from "@/components/ProjectTemplateSelector";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const EditorHeader = () => {
   const router = useRouter();
@@ -88,45 +89,53 @@ const EditorHeader = () => {
   console.log("project details", data);
 
   return (
-    <header className="bg-white h-14 sticky top-0 z-40 flex items-center px-4">
+    <header className="bg-gradient-to-r from-background via-background to-background border-b border-border/50 h-16 sticky top-0 z-50 flex items-center px-6 backdrop-blur-xl bg-background/95 shadow-sm">
       {/***left side */}
-      <div className="flex items-center max-w-sm gap-4">
+      <div className="flex items-center gap-4 flex-1">
         <Button
           onClick={() => router.push("/dashboard")}
-          className="cursor-pointer"
+          variant="ghost"
+          size="icon"
+          className="cursor-pointer h-9 w-9 rounded-lg hover:bg-primary/10 transition-all duration-200 group"
         >
-          <ArrowLeft />
+          <ArrowLeft className="h-5 w-5 group-hover:-translate-x-0.5 transition-transform" />
         </Button>
 
-        <h2 className="font-semibold relative">
-          {isLoading ? (
-            <span className="text-slate-400">Loading...</span>
-          ) : (
-            <div className="flex items-center gap-1 group">
-              <span>{data?.name ?? "-"}</span>
-
-              <UpdateProject
-                name={data?.name}
-                projectId={projectId as string}
-                fetchData={fetchData}
-              />
-            </div>
-          )}
-        </h2>
+        <div className="flex items-center gap-3 px-3 py-2 rounded-lg bg-muted/30 backdrop-blur-sm border border-border/50">
+          <div className="w-1 h-6 bg-gradient-to-b from-primary via-primary/70 to-primary/40 rounded-full" />
+          <h2 className="font-semibold text-lg relative">
+            {isLoading ? (
+              <span className="text-muted-foreground animate-pulse">Loading...</span>
+            ) : (
+              <div className="flex items-center gap-2 group">
+                <span className="bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text">{data?.name ?? "-"}</span>
+                <UpdateProject
+                  name={data?.name}
+                  projectId={projectId as string}
+                  fetchData={fetchData}
+                />
+              </div>
+            )}
+          </h2>
+        </div>
 
         <div
           className={cn(
-            "flex items-center gap-1 opacity-100",
-            editorUpdateLoading && "animate-pulse opacity-30"
+            "flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all duration-300",
+            editorUpdateLoading 
+              ? "bg-primary/10 text-primary animate-pulse" 
+              : "bg-muted/50 text-muted-foreground"
           )}
         >
-          <Database size={16} />
-          {editorUpdateLoading ? "Saving..." : "Save"}
+          <Database size={16} className={cn(editorUpdateLoading && "animate-spin")} />
+          <span className="text-sm font-medium">
+            {editorUpdateLoading ? "Saving..." : "Saved"}
+          </span>
         </div>
       </div>
 
       {/***right side */}
-      <div className="ml-auto w-fit flex items-center gap-4">
+      <div className="ml-auto w-fit flex items-center gap-3">
         {/* Project Templates */}
         <ProjectTemplateSelector />
         
@@ -138,15 +147,27 @@ const EditorHeader = () => {
           projectId={projectId as string}
         />
         
-        <div
+        <Button
           onClick={() => setOpenBrowser(!openBrowser)}
+          variant="ghost"
+          size="icon"
           className={cn(
-            "p-1 cursor-pointer rounded-full  drop-shadow-2xl ",
-            openBrowser && "text-primary"
+            "h-9 w-9 rounded-lg transition-all duration-300 relative group overflow-hidden",
+            openBrowser ? "bg-primary/15 text-primary" : "hover:bg-primary/10"
           )}
         >
-          <AppWindow />
-        </div>
+          <div className={cn(
+            "absolute inset-0 bg-gradient-to-br from-primary/0 via-primary/0 to-primary/0 transition-all duration-300",
+            openBrowser && "from-primary/10 via-primary/20 to-primary/10"
+          )} />
+          <AppWindow className="h-5 w-5 relative z-10" />
+        </Button>
+
+        <div className="h-6 w-px bg-border/50" />
+        
+        {/* Theme Toggle */}
+        <ThemeToggle />
+        
         <UserAvatar />
       </div>
     </header>

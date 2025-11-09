@@ -11,19 +11,24 @@ export default function EditorLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div>
+    <div className="h-screen flex flex-col overflow-hidden bg-background">
       <EditorProviderComp>
+        {/* Fixed Header */}
         <EditorHeader />
-        <div className="relative">
+        
+        {/* Main Content Area */}
+        <div className="flex-1 flex overflow-hidden">
           <BrowerRunCode>
             <SidebarProvider>
-              {/**editor sidebar */}
+              {/* Fixed Sidebar - No Overlay */}
               <EditorSidebar />
 
-              {/**editor and file open */}
-              <main className="bg-gray-100 w-full">
+              {/* Main Editor Area */}
+              <main className="flex-1 flex flex-col overflow-hidden bg-gradient-to-br from-background via-background to-muted/20">
                 <FileOpen />
-                {children}
+                <div className="flex-1 overflow-auto">
+                  {children}
+                </div>
               </main>
             </SidebarProvider>
           </BrowerRunCode>
