@@ -16,6 +16,7 @@ import { useParams, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
 import UpdateProject from "./UpdateProject";
+import { ShareProject } from "./ShareProject";
 import { useEditorContext } from "../_provider/EditorProvider";
 import { cn } from "@/lib/utils";
 import { RunCodeButton } from "@/components/RunCodeButton";
@@ -153,6 +154,14 @@ const EditorHeader = () => {
       <div className="ml-auto w-fit flex items-center gap-3">
         {/* Project Templates */}
         <ProjectTemplateSelector />
+        
+        {/* Share Project - Only for owners */}
+        {data && (
+          <ShareProject
+            projectId={projectId as string}
+            projectName={data.name || "Project"}
+          />
+        )}
         
         {/* Run Code Button */}
         <RunCodeButton
