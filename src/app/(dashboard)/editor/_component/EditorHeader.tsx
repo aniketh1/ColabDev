@@ -37,7 +37,7 @@ const EditorHeader = () => {
     setProjectAccess,
   } = useEditorContext();
 
-  console.log("params", projectId);
+
 
   const fetchData = async () => {
     try {
@@ -55,15 +55,6 @@ const EditorHeader = () => {
         
         // Set project access info for the provider
         if (projectData) {
-          console.log('🔍 Project Access Data from API:', {
-            isOwner: projectData.isOwner,
-            isCollaborator: projectData.isCollaborator,
-            isPublic: projectData.isPublic,
-            canEdit: projectData.canEdit,
-            userId: projectData.userId,
-            collaborators: projectData.collaborators
-          });
-          
           // Calculate canEdit based on isOwner OR isCollaborator
           const accessData = {
             isOwner: projectData.isOwner === true,
@@ -72,8 +63,7 @@ const EditorHeader = () => {
             // Explicitly set canEdit - user can edit if they're owner OR collaborator
             canEdit: projectData.isOwner === true || projectData.isCollaborator === true,
           };
-          
-          console.log('🔧 Setting project access to:', accessData);
+
           setProjectAccess(accessData);
         }
       }
@@ -110,8 +100,6 @@ const EditorHeader = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId]);
-
-  console.log("project details", data);
 
   return (
     <header className="bg-background border-b border-border h-16 sticky top-0 z-50 flex items-center px-6 shadow-sm">
