@@ -11,7 +11,8 @@ import { toast } from "sonner";
 import Axios from "@/lib/Axios";
 import { useEditorContext } from "../_provider/EditorProvider";
 import debounce from "@/lib/debounce";
-import { useCollaboration } from "@/hooks/useCollaboration";
+import { LiveblocksProvider } from "@/components/LiveblocksProvider";
+import { useLiveblocksCollaboration } from "@/hooks/useLiveblocksCollaboration";
 
 const CodeEditor = () => {
   const searchParams = useSearchParams();
@@ -24,11 +25,10 @@ const CodeEditor = () => {
   const editorViewRef = useRef<EditorView | null>(null);
   const isRemoteUpdateRef = useRef(false);
 
-  // Real-time collaboration
-  const { isConnected, broadcastChange, notifyFileSaved } = useCollaboration({
-    projectId: projectId as string,
+  // Real-time collaboration with Liveblocks
+  const { isConnected, broadcastChange, notifyFileSaved } = useLiveblocksCollaboration({
     fileName: file || '',
-    onContentUpdate: (newContent, socketId) => {
+    onContentUpdate: (newContent: string, userId: string) => {
       if (editorViewRef.current && !isRemoteUpdateRef.current) {
         isRemoteUpdateRef.current = true;
         const transaction = editorViewRef.current.state.update({
@@ -46,10 +46,10 @@ const CodeEditor = () => {
         }, 100);
       }
     },
-    onUserJoined: (socketId) => {
-      toast.success('A collaborator joined', { duration: 2000 });
+    onUserJoined: (userId: string, userInfo: any) => {
+      toast.success(`${userInfo?.name || 'A collaborator'} joined`, { duration: 2000 });
     },
-    onUserLeft: (socketId) => {
+    onUserLeft: (userId: string) => {
       toast.info('A collaborator left', { duration: 2000 });
     },
   });
@@ -209,4 +209,13 @@ const CodeEditor = () => {
   );
 };
 
-export default CodeEditor;
+// Wrap the editor with Liveblocks provider
+export default function EditorPage() {
+  const { projectId } = useParams();
+  
+  return (
+    <LiveblocksProvider roomId={`project-${projectId}`}>
+      <CodeEditor />
+    </LiveblocksProvider>
+  );
+}
