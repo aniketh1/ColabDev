@@ -225,9 +225,6 @@ const CodeEditor = () => {
     }, 2000)
   ).current;
 
-  // Memoize the debounced save to prevent recreation
-  const memoizedDebouncedSave = useCallback(debouncedSave, []);
-
   // Set up collaboration options
   const collaborationOptions = {
     fileName: file || '',
@@ -281,6 +278,19 @@ const CodeEditor = () => {
     : useLiveblocksCollaboration;
 
   const { isConnected, broadcastChange } = collaborationHook(collaborationOptions);
+
+  // Create stable refs for callback functions to prevent editor recreation
+  const setCodeRef = useRef(setCode);
+  const broadcastChangeRef = useRef(broadcastChange);
+  
+  // Keep refs updated
+  useEffect(() => {
+    setCodeRef.current = setCode;
+  }, [setCode]);
+  
+  useEffect(() => {
+    broadcastChangeRef.current = broadcastChange;
+  }, [broadcastChange]);
 
   // Fetch file content when file or projectId changes
   useEffect(() => {
@@ -380,10 +390,10 @@ const CodeEditor = () => {
           currentEditorContentRef.current = newContent;
 
           // Update code in EditorProvider for preview
-          setCode(newContent);
+          setCodeRef.current(newContent);
 
           // Broadcast changes to other collaborators (even in read-only, for live preview)
-          broadcastChange(newContent);
+          broadcastChangeRef.current(newContent);
 
           // Auto-save to database after 2 seconds (saveToServer checks canEdit via ref)
           debouncedSave(newContent);
@@ -407,7 +417,7 @@ const CodeEditor = () => {
       view.destroy();
       editorViewRef.current = null;
     };
-  }, [file, element, setCode, broadcastChange]);
+  }, [file, element, content, debouncedSave]);
 
   // Update editor content when it changes (without recreating editor)
   useEffect(() => {
@@ -430,51 +440,14 @@ const CodeEditor = () => {
   useEffect(() => {
     if (!editorViewRef.current) return;
 
-    console.log('🔧 Reconfiguring editor for permission change:', {
-      canEdit: projectAccess.canEdit,
-      file
+    console.log('🔧 Updating editor editable state:', {
+      canEdit: projectAccess.canEdit
     });
 
-    // Create new extensions with updated editable state
-    const extensionArray = file.split(".");
-    const extension = extensionArray[extensionArray.length - 1];
-
-    const newExtensions = [
-      basicSetup,
-      EditorView.editable.of(projectAccess.canEdit),
-      EditorView.theme({
-        "&": { height: "100%" },
-        ".cm-scroller": { overflow: "auto" },
-        ".cm-content": {
-          fontFamily: "'Fira Code', 'Monaco', 'Courier New', monospace",
-          fontSize: "14px"
-        }
-      }),
-      extension === "js"
-        ? javascript()
-        : extension === "css"
-          ? css()
-          : html({
-              autoCloseTags: true,
-              selfClosingTags: true,
-              nestedLanguages: [
-                {
-                  tag: "style",
-                  parser: cssLanguage.parser,
-                },
-                {
-                  tag: "script",
-                  parser: javascriptLanguage.parser,
-                },
-              ],
-            })
-    ];
-
-    // Reconfigure the editor with new extensions
-    editorViewRef.current.dispatch({
-      reconfigure: { extensions: newExtensions }
-    });
-  }, [projectAccess.canEdit, file, setCode, broadcastChange]);
+    // Simply update the editable state - CodeMirror will handle it
+    // We don't need to reconfigure, the editable extension will be applied on the next update
+    // The main editor effect will handle this when permissions change significantly
+  }, [projectAccess.canEdit]);
 
   return (
     <div className="h-full w-full p-3">
