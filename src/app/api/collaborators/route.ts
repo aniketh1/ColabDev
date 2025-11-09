@@ -70,6 +70,13 @@ export async function POST(request: NextRequest) {
     project.collaborators = project.collaborators || [];
     project.collaborators.push(userToAdd._id);
     await project.save();
+    
+    console.log('✅ Collaborator added:', {
+      projectId,
+      collaboratorId: userToAdd._id,
+      collaboratorEmail: email,
+      totalCollaborators: project.collaborators.length
+    });
 
     return NextResponse.json(
       {

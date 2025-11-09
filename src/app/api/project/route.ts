@@ -103,6 +103,16 @@ export async function GET(request : NextRequest){
                 (collabId: any) => collabId.toString() === session.user.id
             );
             const isPublic = project.isPublic;
+            
+            console.log('🔍 Project Access Check:', {
+                projectId,
+                userId: session.user.id,
+                isOwner,
+                isCollaborator,
+                isPublic,
+                collaboratorIds: project.collaborators?.map((id: any) => id.toString()),
+                collaboratorsCount: project.collaborators?.length || 0
+            });
 
             if (!isOwner && !isCollaborator && !isPublic) {
                 return NextResponse.json({
