@@ -30,52 +30,21 @@ const CodeEditor = () => {
   const isFetchingRef = useRef(false);
   const abortControllerRef = useRef<AbortController | null>(null);
   const [isSaving, setIsSaving] = useState(false);
-
-  // Set up collaboration options
-  const collaborationOptions = {
-    fileName: file || '',
-    onContentUpdate: (newContent: string) => {
-      // Handle remote content updates from other collaborators
-      if (editorViewRef.current && newContent !== editorViewRef.current.state.doc.toString()) {
-        isRemoteUpdateRef.current = true;
-        
-        // Update editor content
-        const transaction = editorViewRef.current.state.update({
-          changes: {
-            from: 0,
-            to: editorViewRef.current.state.doc.length,
-            insert: newContent
-          }
-        });
-        
-        editorViewRef.current.dispatch(transaction);
-        
-        // Reset flag after a short delay
-        setTimeout(() => {
-          isRemoteUpdateRef.current = false;
-        }, 100);
-      }
-      
-      lastSyncedContentRef.current = newContent;
-      setCode(newContent);
-    },
-    onUserJoined: (userId: string, userInfo: any) => {
-      toast.success(`👤 ${userInfo?.name || 'A collaborator'} joined`, { duration: 2000 });
-    },
-    onUserLeft: () => {
-      toast.info(`👋 A collaborator left`, { duration: 2000 });
-    },
-    onFileSaved: () => {
-      // Refresh content when another user saves
-      if (!isSaving && file && projectId) {
-        console.log('🔄 File saved by another user, refreshing...');
-        fetchData();
-      }
-    }
-  };
-
-  // Use Liveblocks collaboration hook
-  const { isConnected, broadcastChange, notifyFileSaved } = useLiveblocksCollaboration(collaborationOptions);
+  
+  // Use refs to always have latest values in callbacks
+  const projectAccessRef = useRef(projectAccess);
+  const fileIdRef = useRef(fileId);
+  
+  // Keep refs updated
+  useEffect(() => {
+    projectAccessRef.current = projectAccess;
+    console.log('📝 projectAccess updated in ref:', projectAccess);
+  }, [projectAccess]);
+  
+  useEffect(() => {
+    fileIdRef.current = fileId;
+    console.log('📝 fileId updated in ref:', fileId);
+  }, [fileId]);
 
   const ref = useCallback((node: HTMLElement | null) => {
     if (!node) return;
@@ -152,18 +121,30 @@ const CodeEditor = () => {
       setIsLoading(false);
       abortControllerRef.current = null;
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [file, projectId]);
+  }, [file, projectId, setIsLoading, setCode]);
 
-  const updateData = async (fileContent: string) => {
+  // Direct save function that ALWAYS reads from refs
+  const saveToServer = async (fileContent: string) => {
+    const currentAccess = projectAccessRef.current;
+    const currentFileId = fileIdRef.current;
+    
+    console.log('💾 saveToServer called with current state:', {
+      canEdit: currentAccess.canEdit,
+      isOwner: currentAccess.isOwner,
+      isCollaborator: currentAccess.isCollaborator,
+      fileId: currentFileId,
+      file,
+      contentLength: fileContent.length
+    });
+
     // Don't save if user doesn't have edit access
-    if (!projectAccess.canEdit) {
-      console.log('⛔ Save blocked - no edit access');
+    if (!currentAccess.canEdit) {
+      console.log('⛔ Save blocked - no edit access', currentAccess);
       return;
     }
 
     // Don't save if fileId is not set yet
-    if (!fileId) {
+    if (!currentFileId) {
       console.log('⛔ Save blocked - fileId not loaded yet');
       return;
     }
@@ -175,15 +156,11 @@ const CodeEditor = () => {
     }
 
     const payload = {
-      fileId: fileId,
+      fileId: currentFileId,
       content: fileContent,
     };
     
-    console.log('💾 Saving file:', {
-      file,
-      fileId,
-      contentLength: fileContent.length
-    });
+    console.log('💾 Actually saving file now...');
     
     try {
       setIsSaving(true);
@@ -193,16 +170,13 @@ const CodeEditor = () => {
         console.log('✅ File saved successfully');
         lastSyncedContentRef.current = fileContent;
         
-        // Notify other collaborators that file was saved
-        notifyFileSaved();
-        
         toast.success('File saved', { duration: 1000 });
       }
     } catch (error: any) {
       console.error('❌ Save failed:', {
         status: error.response?.status,
         error: error.response?.data?.error,
-        fileId,
+        fileId: currentFileId,
         file
       });
       
@@ -218,12 +192,58 @@ const CodeEditor = () => {
     }
   };
 
-  // Create debounced save function
-  const updateDataDebounce = useRef(
-    debounce((doc: string) => {
-      updateData(doc);
+  // Create stable debounced save function once
+  const debouncedSave = useRef(
+    debounce((content: string) => {
+      saveToServer(content);
     }, 2000)
   ).current;
+
+  // Set up collaboration options
+  const collaborationOptions = {
+    fileName: file || '',
+    onContentUpdate: (newContent: string) => {
+      // Handle remote content updates from other collaborators
+      if (editorViewRef.current && newContent !== editorViewRef.current.state.doc.toString()) {
+        isRemoteUpdateRef.current = true;
+        
+        // Update editor content
+        const transaction = editorViewRef.current.state.update({
+          changes: {
+            from: 0,
+            to: editorViewRef.current.state.doc.length,
+            insert: newContent
+          }
+        });
+        
+        editorViewRef.current.dispatch(transaction);
+        
+        // Reset flag after a short delay
+        setTimeout(() => {
+          isRemoteUpdateRef.current = false;
+        }, 100);
+      }
+      
+      lastSyncedContentRef.current = newContent;
+      setCode(newContent);
+    },
+    onUserJoined: (userId: string, userInfo: any) => {
+      toast.success(`👤 ${userInfo?.name || 'A collaborator'} joined`, { duration: 2000 });
+    },
+    onUserLeft: () => {
+      toast.info(`👋 A collaborator left`, { duration: 2000 });
+    },
+    onFileSaved: () => {
+      // Refresh content when another user saves
+      if (!isSaving && file && projectId) {
+        console.log('🔄 File saved by another user, refreshing...');
+        fetchData();
+      }
+    }
+  };
+
+  // Use Liveblocks collaboration hook
+  const { isConnected, broadcastChange } = useLiveblocksCollaboration(collaborationOptions);
 
   // Fetch file content when file or projectId changes
   useEffect(() => {
@@ -299,25 +319,23 @@ const CodeEditor = () => {
             }),
     ];
 
-    // Add update listener for editable mode
-    if (projectAccess.canEdit) {
-      extensions.push(
-        EditorView.updateListener.of((update) => {
-          if (update.docChanged && !isRemoteUpdateRef.current) {
-            const newContent = update.state.doc.toString();
+    // Add update listener - always add it, but save function checks permissions via ref
+    extensions.push(
+      EditorView.updateListener.of((update) => {
+        if (update.docChanged && !isRemoteUpdateRef.current) {
+          const newContent = update.state.doc.toString();
 
-            // Update code in EditorProvider for preview
-            setCode(newContent);
+          // Update code in EditorProvider for preview
+          setCode(newContent);
 
-            // Broadcast changes to other collaborators
-            broadcastChange(newContent);
+          // Broadcast changes to other collaborators (even in read-only, for live preview)
+          broadcastChange(newContent);
 
-            // Auto-save to database after 2 seconds
-            updateDataDebounce(newContent);
-          }
-        })
-      );
-    }
+          // Auto-save to database after 2 seconds (saveToServer checks canEdit via ref)
+          debouncedSave(newContent);
+        }
+      })
+    );
 
     const state = EditorState.create({
       doc: content || "",
@@ -335,7 +353,7 @@ const CodeEditor = () => {
       view.destroy();
       editorViewRef.current = null;
     };
-  }, [file, element, content, projectAccess.canEdit, setCode, broadcastChange, updateDataDebounce]);
+  }, [file, element, content, projectAccess.canEdit, setCode, broadcastChange, debouncedSave]);
 
   return (
     <div className="h-full w-full p-3">

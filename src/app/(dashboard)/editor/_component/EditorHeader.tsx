@@ -1,6 +1,6 @@
 "use client";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+
 import UserAvatar from "@/components/UserAvatar";
 import LogoIcon from "@/components/LogoIcon";
 import Axios from "@/lib/Axios";
@@ -8,9 +8,6 @@ import {
   AppWindow,
   ArrowLeft,
   Database,
-  Pencil,
-  Play,
-  PlayCircle,
 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
@@ -27,9 +24,7 @@ const EditorHeader = () => {
   const router = useRouter();
   const { projectId } = useParams();
   const [isLoading, setIsLoading] = useState(true);
-  const [data, setData] = useState({
-    name: "",
-  });
+  const [data, setData] = useState<any>(null);
   const [projectFiles, setProjectFiles] = useState({
     html: "",
     css: "",
@@ -60,7 +55,7 @@ const EditorHeader = () => {
         
         // Set project access info for the provider
         if (projectData) {
-          console.log('🔍 Project Access Data:', {
+          console.log('🔍 Project Access Data from API:', {
             isOwner: projectData.isOwner,
             isCollaborator: projectData.isCollaborator,
             isPublic: projectData.isPublic,
@@ -69,16 +64,22 @@ const EditorHeader = () => {
             collaborators: projectData.collaborators
           });
           
-          setProjectAccess({
-            isOwner: projectData.isOwner || false,
-            isCollaborator: projectData.isCollaborator || false,
-            isPublic: projectData.isPublic !== false, // default to true
-            canEdit: projectData.canEdit || projectData.isOwner || projectData.isCollaborator || false,
-          });
+          // Calculate canEdit based on isOwner OR isCollaborator
+          const accessData = {
+            isOwner: projectData.isOwner === true,
+            isCollaborator: projectData.isCollaborator === true,
+            isPublic: projectData.isPublic !== false,
+            // Explicitly set canEdit - user can edit if they're owner OR collaborator
+            canEdit: projectData.isOwner === true || projectData.isCollaborator === true,
+          };
+          
+          console.log('🔧 Setting project access to:', accessData);
+          setProjectAccess(accessData);
         }
       }
     } catch (error: any) {
-      toast.error(error?.response?.data?.error);
+      console.error('❌ Failed to fetch project data:', error);
+      toast.error(error?.response?.data?.error || 'Failed to load project');
     } finally {
       setIsLoading(false);
     }
@@ -107,6 +108,7 @@ const EditorHeader = () => {
       fetchData();
       fetchProjectFiles();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId]);
 
   console.log("project details", data);
@@ -134,11 +136,13 @@ const EditorHeader = () => {
             ) : (
               <div className="flex items-center gap-2 group">
                 <span className="bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text">{data?.name ?? "-"}</span>
-                <UpdateProject
-                  name={data?.name}
-                  projectId={projectId as string}
-                  fetchData={fetchData}
-                />
+                {data && (
+                  <UpdateProject
+                    name={data?.name}
+                    projectId={projectId as string}
+                    fetchData={fetchData}
+                  />
+                )}
               </div>
             )}
           </h2>
@@ -164,8 +168,8 @@ const EditorHeader = () => {
         {/* Project Templates */}
         <ProjectTemplateSelector />
         
-        {/* Share Project - Only for owners */}
-        {data && (
+        {/* Share Project - Only show for owners */}
+        {data && data.isOwner && (
           <ShareProject
             projectId={projectId as string}
             projectName={data.name || "Project"}

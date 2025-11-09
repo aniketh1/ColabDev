@@ -2,10 +2,10 @@
 import { createContext, useContext, useState } from 'react'
 
 interface TEditorProvider {
-    isLoading : boolean
-    setIsLoading : (value : boolean)=>void
-    openBrowser : boolean;
-    setOpenBrowser : (value : boolean)=>void
+    isLoading: boolean
+    setIsLoading: (value: boolean) => void
+    openBrowser: boolean;
+    setOpenBrowser: (value: boolean) => void
     code: string;
     setCode: (value: string) => void;
     projectAccess: {
@@ -18,10 +18,10 @@ interface TEditorProvider {
 }
 
 const initialValue = {
-    isLoading : false,
-    setIsLoading : ()=>{},
-    openBrowser : false,
-    setOpenBrowser : ()=>{},
+    isLoading: false,
+    setIsLoading: () => {},
+    openBrowser: false,
+    setOpenBrowser: () => {},
     code: '',
     setCode: () => {},
     projectAccess: {
@@ -35,12 +35,11 @@ const initialValue = {
 
 const EditorProvider = createContext<TEditorProvider>(initialValue)
 
-export const useEditorContext = ()=>useContext(EditorProvider)
+export const useEditorContext = () => useContext(EditorProvider)
 
-
-export function EditorProviderComp({children} : { children : React.ReactNode }){
-    const [isLoading,setIsLoading] = useState<boolean>(false)
-    const [openBrowser,setOpenBrowser] = useState<boolean>(false)
+export function EditorProviderComp({ children }: { children: React.ReactNode }) {
+    const [isLoading, setIsLoading] = useState<boolean>(false)
+    const [openBrowser, setOpenBrowser] = useState<boolean>(false)
     const [code, setCode] = useState<string>('')
     const [projectAccess, setProjectAccess] = useState({
         isOwner: false,
@@ -49,11 +48,11 @@ export function EditorProviderComp({children} : { children : React.ReactNode }){
         canEdit: false,
     })
 
-    const handleLoading = (value? : boolean)=>{
+    const handleLoading = (value?: boolean) => {
         setIsLoading(value || false)
     }
 
-    const handleOpenBrowser = (value? : boolean)=>{
+    const handleOpenBrowser = (value?: boolean) => {
         setOpenBrowser(value || false)
     }
 
@@ -62,16 +61,27 @@ export function EditorProviderComp({children} : { children : React.ReactNode }){
     }
 
     const handleSetProjectAccess = (value: any) => {
-        setProjectAccess(value)
+        console.log('🔧 EditorProvider: setProjectAccess called with:', value);
+        
+        // Ensure canEdit is properly calculated
+        const newAccess = {
+            isOwner: value.isOwner || false,
+            isCollaborator: value.isCollaborator || false,
+            isPublic: value.isPublic !== false, // default true
+            // canEdit is true if owner OR collaborator
+            canEdit: value.isOwner || value.isCollaborator || false,
+        };
+        
+        console.log('🔧 EditorProvider: Setting projectAccess to:', newAccess);
+        setProjectAccess(newAccess);
     }
 
-
-    return(
+    return (
         <EditorProvider.Provider value={{
-            isLoading : isLoading,
-            setIsLoading : handleLoading,
+            isLoading: isLoading,
+            setIsLoading: handleLoading,
             openBrowser: openBrowser,
-            setOpenBrowser : handleOpenBrowser,
+            setOpenBrowser: handleOpenBrowser,
             code: code,
             setCode: handleSetCode,
             projectAccess: projectAccess,
@@ -81,4 +91,3 @@ export function EditorProviderComp({children} : { children : React.ReactNode }){
         </EditorProvider.Provider>
     )
 }
-
