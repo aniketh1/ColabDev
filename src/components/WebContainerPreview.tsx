@@ -101,26 +101,47 @@ export function WebContainerPreview({ projectId, techStack, files }: WebContaine
         setStatus('starting');
 
         const startCommand = techStack === 'node' ? 'start' : 'dev';
+        console.log(`🚀 Running: npm run ${startCommand}`);
+        
+        // Set up server-ready listener BEFORE spawning process
+        const serverReadyPromise = new Promise<string>((resolve, reject) => {
+          const timeout = setTimeout(() => {
+            reject(new Error('Server start timeout after 60 seconds'));
+          }, 60000);
+
+          container.on('server-ready', (port, serverUrl) => {
+            console.log(`✅ Server ready event received - Port: ${port}, URL: ${serverUrl}`);
+            clearTimeout(timeout);
+            resolve(serverUrl);
+          });
+        });
+
         const devProcess = await container.spawn('npm', ['run', startCommand]);
 
+        // Log output
         devProcess.output.pipeTo(
           new WritableStream({
             write(data) {
-              addLog(data.trim());
+              const message = data.trim();
+              if (message) {
+                console.log('📦 Dev server:', message);
+                addLog(message);
+              }
             },
           })
         );
 
         // Wait for server to be ready
-        container.on('server-ready', (port, url) => {
-          if (!isMounted) return;
-          addLog(`✅ Server ready on port ${port}`);
-          setUrl(url);
-          setStatus('ready');
-        });
+        const serverUrl = await serverReadyPromise;
+        
+        if (!isMounted) return;
+        addLog(`✅ Server ready at ${serverUrl}`);
+        console.log('🎉 WebContainer server URL:', serverUrl);
+        setUrl(serverUrl);
+        setStatus('ready');
 
       } catch (err: any) {
-        console.error('WebContainer error:', err);
+        console.error('❌ WebContainer error:', err);
         if (isMounted) {
           setStatus('error');
           setError(err.message || 'Failed to start WebContainer');
@@ -135,13 +156,6 @@ export function WebContainerPreview({ projectId, techStack, files }: WebContaine
       isMounted = false;
     };
   }, [projectId, techStack, JSON.stringify(files)]);
-
-  // Update iframe when URL is ready
-  useEffect(() => {
-    if (url && iframeRef.current) {
-      iframeRef.current.src = url;
-    }
-  }, [url]);
 
   return (
     <div className="h-full w-full flex flex-col bg-gray-50">
@@ -222,12 +236,14 @@ export function WebContainerPreview({ projectId, techStack, files }: WebContaine
 
       {/* Preview iframe */}
       <div className="flex-1 relative">
-        {status === 'ready' ? (
+        {status === 'ready' && url ? (
           <iframe
             ref={iframeRef}
+            src={url}
             className="w-full h-full border-0"
             title="Preview"
             sandbox="allow-scripts allow-same-origin allow-forms allow-modals allow-popups"
+            allow="cross-origin-isolated"
           />
         ) : status !== 'error' ? (
           <div className="absolute inset-0 flex items-center justify-center">

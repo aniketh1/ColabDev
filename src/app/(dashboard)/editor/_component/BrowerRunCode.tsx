@@ -42,9 +42,16 @@ const BrowerRunCode = ({ children }: { children: React.ReactNode }) => {
         const response = await Axios.get(`/api/project-files/${projectId}`);
         
         if (response.status === 200) {
+          const { techStack, files } = response.data.data;
+          console.log('📦 Fetched project data:', {
+            techStack,
+            fileCount: Object.keys(files).length,
+            files: Object.keys(files),
+          });
+          
           setProjectData({
-            techStack: response.data.data.techStack,
-            files: response.data.data.files,
+            techStack,
+            files,
           });
         }
       } catch (error: any) {
