@@ -34,6 +34,7 @@ const CodeEditor = () => {
   // Use refs to always have latest values in callbacks
   const projectAccessRef = useRef(projectAccess);
   const fileIdRef = useRef(fileId);
+  const fileRef = useRef(file);
   
   // Keep refs updated
   useEffect(() => {
@@ -45,6 +46,11 @@ const CodeEditor = () => {
     fileIdRef.current = fileId;
     console.log('📝 fileId updated in ref:', fileId);
   }, [fileId]);
+  
+  useEffect(() => {
+    fileRef.current = file;
+    console.log('📝 file updated in ref:', file);
+  }, [file]);
 
   const ref = useCallback((node: HTMLElement | null) => {
     if (!node) return;
@@ -127,13 +133,14 @@ const CodeEditor = () => {
   const saveToServer = async (fileContent: string) => {
     const currentAccess = projectAccessRef.current;
     const currentFileId = fileIdRef.current;
+    const currentFile = fileRef.current;
     
     console.log('💾 saveToServer called with current state:', {
       canEdit: currentAccess.canEdit,
       isOwner: currentAccess.isOwner,
       isCollaborator: currentAccess.isCollaborator,
       fileId: currentFileId,
-      file,
+      file: currentFile,
       contentLength: fileContent.length
     });
 
@@ -177,7 +184,7 @@ const CodeEditor = () => {
         status: error.response?.status,
         error: error.response?.data?.error,
         fileId: currentFileId,
-        file
+        file: currentFile
       });
       
       if (error.response?.status === 403) {
