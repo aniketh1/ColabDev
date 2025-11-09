@@ -62,14 +62,22 @@ const CodeEditor = () => {
       projectId: projectId,
       fileName: file,
     };
+    
+    console.log('📥 Fetching file:', file, 'for project:', projectId);
+    
     try {
       setIsLoading(true);
-      console.log('Fetching file:', file, 'for project:', projectId);
-      const response = await Axios.post("/api/code", payload);
+      const response = await Axios.post("/api/code", payload, {
+        timeout: 10000, // 10 second timeout
+      });
 
       if (response.status === 200) {
         const fileContent = response?.data?.data?.content;
-        console.log('File content received, length:', fileContent?.length);
+        console.log('✅ File content received:', {
+          file,
+          contentLength: fileContent?.length || 0,
+          fileId: response?.data?.data?._id
+        });
         setContent(fileContent || '');
         setFileId(response?.data?.data?._id);
         // Sync with EditorProvider for preview
@@ -78,10 +86,18 @@ const CodeEditor = () => {
     } catch (error: any) {
       // Don't show error toast for aborted requests (normal when switching files)
       if (error.code === 'ECONNABORTED' || error.code === 'ERR_CANCELED') {
-        console.log('Request cancelled (switching files)');
+        console.log('⏭️ Request cancelled (normal - switching files)');
         return;
       }
-      console.error('Error fetching file:', error);
+      console.error('❌ Error fetching file:', {
+        file,
+        projectId,
+        status: error?.response?.status,
+        statusText: error?.response?.statusText,
+        error: error?.response?.data?.error,
+        message: error?.message,
+        code: error?.code
+      });
       const errorMessage = error?.response?.data?.error || error?.message || 'Failed to load file';
       toast.error(errorMessage);
       // Set empty content on error so editor doesn't break
@@ -124,9 +140,23 @@ const CodeEditor = () => {
   console.log("extension", extension);
 
   // Only fetch when file or projectId changes, not when fetchData function changes
+  // Use ref to track if we're already fetching to prevent multiple simultaneous requests
+  const isFetchingRef = useRef(false);
+  
   useEffect(() => {
     if (!file || !projectId) return;
-    fetchData();
+    
+    // Prevent multiple simultaneous fetches
+    if (isFetchingRef.current) {
+      console.log('⏭️ Skipping fetch - already in progress');
+      return;
+    }
+    
+    isFetchingRef.current = true;
+    fetchData().finally(() => {
+      isFetchingRef.current = false;
+    });
+    
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [file, projectId]);
 

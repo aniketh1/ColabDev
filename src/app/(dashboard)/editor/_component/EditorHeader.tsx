@@ -60,11 +60,20 @@ const EditorHeader = () => {
         
         // Set project access info for the provider
         if (projectData) {
+          console.log('🔍 Project Access Data:', {
+            isOwner: projectData.isOwner,
+            isCollaborator: projectData.isCollaborator,
+            isPublic: projectData.isPublic,
+            canEdit: projectData.canEdit,
+            userId: projectData.userId,
+            collaborators: projectData.collaborators
+          });
+          
           setProjectAccess({
             isOwner: projectData.isOwner || false,
             isCollaborator: projectData.isCollaborator || false,
             isPublic: projectData.isPublic !== false, // default to true
-            canEdit: projectData.isOwner || projectData.isCollaborator || false,
+            canEdit: projectData.canEdit || projectData.isOwner || projectData.isCollaborator || false,
           });
         }
       }
