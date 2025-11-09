@@ -76,6 +76,11 @@ const CodeEditor = () => {
         setCode(fileContent || '');
       }
     } catch (error: any) {
+      // Don't show error toast for aborted requests (normal when switching files)
+      if (error.code === 'ECONNABORTED' || error.code === 'ERR_CANCELED') {
+        console.log('Request cancelled (switching files)');
+        return;
+      }
       console.error('Error fetching file:', error);
       const errorMessage = error?.response?.data?.error || error?.message || 'Failed to load file';
       toast.error(errorMessage);
@@ -118,9 +123,12 @@ const CodeEditor = () => {
 
   console.log("extension", extension);
 
+  // Only fetch when file or projectId changes, not when fetchData function changes
   useEffect(() => {
+    if (!file || !projectId) return;
     fetchData();
-  }, [fetchData]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [file, projectId]);
 
   
   const updateDataDebounce = useRef(
