@@ -39,6 +39,17 @@ export async function POST(request : NextRequest){
             (collabId: any) => collabId.toString() === session.user.id
         );
         const isPublic = project.isPublic;
+        
+        console.log('🔐 File Access Check:', {
+            fileName,
+            projectId,
+            userId: session.user.id,
+            userEmail: session.user.email,
+            isOwner,
+            isCollaborator,
+            isPublic,
+            collaboratorIds: project.collaborators?.map((id: any) => id.toString())
+        });
 
         if (!isOwner && !isCollaborator && !isPublic) {
             return NextResponse.json(
