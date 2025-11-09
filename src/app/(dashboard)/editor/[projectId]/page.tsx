@@ -24,7 +24,7 @@ const CodeEditor = () => {
   const { projectId } = useParams();
   const [content, setContent] = useState<string>();
   const [fileId, setFileId] = useState<string>();
-  const { isLoading, setIsLoading } = useEditorContext();
+  const { isLoading, setIsLoading, setCode } = useEditorContext();
   const editorViewRef = useRef<EditorView | null>(null);
   const isRemoteUpdateRef = useRef(false);
   const { isAvailable } = useIsLiveblocksAvailable();
@@ -77,8 +77,11 @@ const CodeEditor = () => {
       const response = await Axios.post("/api/code", payload);
 
       if (response.status === 200) {
-        setContent(response?.data?.data?.content);
+        const fileContent = response?.data?.data?.content;
+        setContent(fileContent);
         setFileId(response?.data?.data?._id);
+        // Sync with EditorProvider for preview
+        setCode(fileContent || '');
       }
     } catch (error: any) {
       toast.error(error.response.data.error);
@@ -133,6 +136,9 @@ const CodeEditor = () => {
         EditorView.updateListener.of((update) => {
           if (update.docChanged && !isRemoteUpdateRef.current) {
             const newContent = update.state.doc.toString();
+            
+            // Update code in EditorProvider for preview
+            setCode(newContent);
             
             // Broadcast changes to other collaborators
             broadcastChange(newContent);

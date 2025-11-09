@@ -6,13 +6,17 @@ interface TEditorProvider {
     setIsLoading : (value : boolean)=>void
     openBrowser : boolean;
     setOpenBrowser : (value : boolean)=>void
+    code: string;
+    setCode: (value: string) => void;
 }
 
 const initialValue = {
     isLoading : false,
     setIsLoading : ()=>{},
     openBrowser : false,
-    setOpenBrowser : ()=>{}
+    setOpenBrowser : ()=>{},
+    code: '',
+    setCode: () => {}
 }
 
 const EditorProvider = createContext<TEditorProvider>(initialValue)
@@ -23,6 +27,7 @@ export const useEditorContext = ()=>useContext(EditorProvider)
 export function EditorProviderComp({children} : { children : React.ReactNode }){
     const [isLoading,setIsLoading] = useState<boolean>(false)
     const [openBrowser,setOpenBrowser] = useState<boolean>(false)
+    const [code, setCode] = useState<string>('')
 
     const handleLoading = (value? : boolean)=>{
         setIsLoading(value || false)
@@ -32,13 +37,19 @@ export function EditorProviderComp({children} : { children : React.ReactNode }){
         setOpenBrowser(value || false)
     }
 
+    const handleSetCode = (value: string) => {
+        setCode(value)
+    }
+
 
     return(
         <EditorProvider.Provider value={{
             isLoading : isLoading,
             setIsLoading : handleLoading,
             openBrowser: openBrowser,
-            setOpenBrowser : handleOpenBrowser
+            setOpenBrowser : handleOpenBrowser,
+            code: code,
+            setCode: handleSetCode
         }}>
             {children}
         </EditorProvider.Provider>
