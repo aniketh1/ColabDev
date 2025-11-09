@@ -32,6 +32,7 @@ const CodeEditor = () => {
   const isFetchingRef = useRef(false);
   const abortControllerRef = useRef<AbortController | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const currentEditorContentRef = useRef<string>("");
   
   // Use refs to always have latest values in callbacks
   const projectAccessRef = useRef(projectAccess);
@@ -97,7 +98,8 @@ const CodeEditor = () => {
         setContent(fileContent);
         setFileId(newFileId);
         lastSyncedContentRef.current = fileContent;
-        
+        currentEditorContentRef.current = fileContent;
+
         // Sync with EditorProvider for preview
         setCode(fileContent);
       }
@@ -125,6 +127,7 @@ const CodeEditor = () => {
       setContent('');
       setCode('');
       setFileId(undefined);
+      currentEditorContentRef.current = '';
     } finally {
       setIsLoading(false);
       abortControllerRef.current = null;
@@ -232,8 +235,9 @@ const CodeEditor = () => {
           isRemoteUpdateRef.current = false;
         }, 100);
       }
-      
+
       lastSyncedContentRef.current = newContent;
+      currentEditorContentRef.current = newContent;
       setCode(newContent);
     },
     onUserJoined: (userId: string, userInfo: any) => {
@@ -267,6 +271,7 @@ const CodeEditor = () => {
       setContent('');
       setFileId(undefined);
       setCode('');
+      currentEditorContentRef.current = '';
       return;
     }
     
@@ -304,7 +309,7 @@ const CodeEditor = () => {
     const extensions: any[] = [
       basicSetup,
       // Add read-only mode if user can't edit
-      EditorView.editable.of(projectAccess.canEdit),
+      EditorView.editable.of(projectAccessRef.current.canEdit),
       // Styling
       EditorView.theme({
         "&": { height: "100%" },
@@ -341,6 +346,9 @@ const CodeEditor = () => {
         if (update.docChanged && !isRemoteUpdateRef.current) {
           const newContent = update.state.doc.toString();
 
+          // Update current editor content ref
+          currentEditorContentRef.current = newContent;
+
           // Update code in EditorProvider for preview
           setCode(newContent);
 
@@ -354,7 +362,7 @@ const CodeEditor = () => {
     );
 
     const state = EditorState.create({
-      doc: content || "",
+      doc: currentEditorContentRef.current || content || "",
       extensions,
     });
 
@@ -369,7 +377,7 @@ const CodeEditor = () => {
       view.destroy();
       editorViewRef.current = null;
     };
-  }, [file, element, projectAccess.canEdit, setCode, broadcastChange, debouncedSave]);
+  }, [file, element, setCode, broadcastChange, debouncedSave]);
 
   // Update editor content when it changes (without recreating editor)
   useEffect(() => {
@@ -387,6 +395,69 @@ const CodeEditor = () => {
       editorViewRef.current.dispatch(transaction);
     }
   }, [content]);
+
+  // Update editable state when project access changes
+  useEffect(() => {
+    if (!editorViewRef.current) return;
+
+    // Create new extensions with updated editable state
+    const extensionArray = file.split(".");
+    const extension = extensionArray[extensionArray.length - 1];
+
+    const newExtensions = [
+      basicSetup,
+      EditorView.editable.of(projectAccess.canEdit),
+      EditorView.theme({
+        "&": { height: "100%" },
+        ".cm-scroller": { overflow: "auto" },
+        ".cm-content": {
+          fontFamily: "'Fira Code', 'Monaco', 'Courier New', monospace",
+          fontSize: "14px"
+        }
+      }),
+      extension === "js"
+        ? javascript()
+        : extension === "css"
+          ? css()
+          : html({
+              autoCloseTags: true,
+              selfClosingTags: true,
+              nestedLanguages: [
+                {
+                  tag: "style",
+                  parser: cssLanguage.parser,
+                },
+                {
+                  tag: "script",
+                  parser: javascriptLanguage.parser,
+                },
+              ],
+            }),
+      // Keep the update listener
+      EditorView.updateListener.of((update) => {
+        if (update.docChanged && !isRemoteUpdateRef.current) {
+          const newContent = update.state.doc.toString();
+
+          // Update current editor content ref
+          currentEditorContentRef.current = newContent;
+
+          // Update code in EditorProvider for preview
+          setCode(newContent);
+
+          // Broadcast changes to other collaborators (even in read-only, for live preview)
+          broadcastChange(newContent);
+
+          // Auto-save to database after 2 seconds (saveToServer checks canEdit via ref)
+          debouncedSave(newContent);
+        }
+      })
+    ];
+
+    // Reconfigure the editor with new extensions
+    editorViewRef.current.dispatch({
+      reconfigure: { extensions: newExtensions }
+    });
+  }, [projectAccess.canEdit, file, setCode, broadcastChange, debouncedSave]);
 
   return (
     <div className="h-full w-full p-3">
