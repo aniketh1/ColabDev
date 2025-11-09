@@ -100,6 +100,33 @@ export async function GET(request : NextRequest){
 
         await connectDB()
 
+        // Import ProjectModel to check access
+        const ProjectModel = (await import("@/models/ProjectModel")).default;
+        
+        // Check if user has access to this project
+        const project = await ProjectModel.findById(projectId);
+        
+        if (!project) {
+            return NextResponse.json(
+                { error : "Project not found"},
+                { status : 404 }
+            )
+        }
+
+        // Check if user is owner, collaborator, or project is public
+        const isOwner = project.userId.toString() === session.user.id;
+        const isCollaborator = project.collaborators?.some(
+            (collabId: any) => collabId.toString() === session.user.id
+        );
+        const isPublic = project.isPublic;
+
+        if (!isOwner && !isCollaborator && !isPublic) {
+            return NextResponse.json(
+                { error : "Access denied to this project"},
+                { status : 403 }
+            )
+        }
+
         const allFile = await FileModel.find({
             projectId : projectId
         }).select("-content")

@@ -85,9 +85,46 @@ export async function GET(request : NextRequest){
         //connect to db
         await connectDB()
 
+        // If specific project is requested, check if user has access
+        if (projectId) {
+            const project = await ProjectModel.findById(projectId);
+            
+            if (!project) {
+                return NextResponse.json({
+                    error : "Project not found"
+                },{
+                    status : 404
+                })
+            }
+
+            // Check if user is owner, collaborator, or project is public
+            const isOwner = project.userId.toString() === session.user.id;
+            const isCollaborator = project.collaborators?.some(
+                (collabId: any) => collabId.toString() === session.user.id
+            );
+            const isPublic = project.isPublic;
+
+            if (!isOwner && !isCollaborator && !isPublic) {
+                return NextResponse.json({
+                    error : "Access denied to this project"
+                },{
+                    status : 403
+                })
+            }
+
+            // Return single project
+            return NextResponse.json(
+                { 
+                    message : "Project found",
+                    data : [project]
+                },
+                { status : 200 }
+            )
+        }
+
+        // For listing projects, show only user's own projects
         const filterProject = {
-            userId : session.user.id,
-            ...( projectId  && {  _id : projectId,  })
+            userId : session.user.id
         }
 
         const projectList = await ProjectModel.find(filterProject).sort({createdAt : -1 }).skip(skip).limit(limit)

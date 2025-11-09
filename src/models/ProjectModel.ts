@@ -5,6 +5,8 @@ export interface IProject {
     name : string;
     userId : mongoose.Types.ObjectId,
     techStack? : string,
+    collaborators? : mongoose.Types.ObjectId[],
+    isPublic? : boolean,
     createdAt? : Date
     updatedAt? : Date
 }
@@ -23,6 +25,14 @@ const projectSchema = new mongoose.Schema<IProject>({
         type : String,
         default : 'html',
         enum : ['html', 'react', 'vue', 'node', 'nextjs']
+    },
+    collaborators : [{
+        type : mongoose.Schema.ObjectId,
+        ref : 'User'
+    }],
+    isPublic : {
+        type : Boolean,
+        default : true
     }
 },{
     timestamps : true
