@@ -1,5 +1,5 @@
 "use client";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useEditorContext } from "../_provider/EditorProvider";
 import * as motion from "motion/react-client";
 import { Resizable } from "re-resizable";
@@ -9,17 +9,54 @@ import { useParams, useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
+import { WebContainerPreview } from "@/components/WebContainerPreview";
+import Axios from "@/lib/Axios";
+import { toast } from "sonner";
 
 const BrowerRunCode = ({ children }: { children: React.ReactNode }) => {
   const { openBrowser, setOpenBrowser } = useEditorContext();
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [drag, setDrag] = useState<boolean>(false);
   const searchParams = useSearchParams();
-  const fileName = searchParams.get("file");
+  const fileName = searchParams?.get("file") || "";
   const [input, setInput] = useState<string>(`/${fileName}` || "");
-  const { projectId } = useParams();
+  const params = useParams();
+  const projectId = params?.projectId as string;
   const [refresh, setRefresh] = useState<boolean>(true);
-  const session = useSession()
+  const session = useSession();
+  
+  // State for WebContainer preview
+  const [projectData, setProjectData] = useState<{
+    techStack: 'react' | 'vue' | 'node' | 'html';
+    files: { [key: string]: string };
+  } | null>(null);
+  const [isLoadingProject, setIsLoadingProject] = useState(false);
+
+  // Fetch project data for WebContainer
+  useEffect(() => {
+    const fetchProjectData = async () => {
+      if (!projectId || !openBrowser) return;
+      
+      try {
+        setIsLoadingProject(true);
+        const response = await Axios.get(`/api/project-files/${projectId}`);
+        
+        if (response.status === 200) {
+          setProjectData({
+            techStack: response.data.data.techStack,
+            files: response.data.data.files,
+          });
+        }
+      } catch (error: any) {
+        console.error('Failed to fetch project data:', error);
+        toast.error('Failed to load project files');
+      } finally {
+        setIsLoadingProject(false);
+      }
+    };
+
+    fetchProjectData();
+  }, [projectId, openBrowser]);
 
   const handleMouseDown = () => {
     setDrag(true);
@@ -34,7 +71,10 @@ const BrowerRunCode = ({ children }: { children: React.ReactNode }) => {
     setTimeout(() => {
         setRefresh(preve => !preve) // true
     }, 1000);
-  }
+  };
+  
+  // Determine if we should use WebContainer or iframe
+  const useWebContainer = projectData && ['react', 'vue', 'node'].includes(projectData.techStack);
   return (
     <div ref={containerRef}>
       {children}
@@ -86,7 +126,20 @@ const BrowerRunCode = ({ children }: { children: React.ReactNode }) => {
               
             </div>
             <div className="h-full w-full">
-              {refresh && (
+              {isLoadingProject ? (
+                <div className="flex items-center justify-center h-full">
+                  <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                    <p className="text-gray-600">Loading project...</p>
+                  </div>
+                </div>
+              ) : useWebContainer && projectData ? (
+                <WebContainerPreview
+                  projectId={projectId as string}
+                  techStack={projectData.techStack}
+                  files={projectData.files}
+                />
+              ) : refresh && (
                 <iframe
                   className="w-full h-full min-h-full min-w-full"
                   src={`${process.env.NEXT_PUBLIC_BASE_URL}/api/file/${projectId}/${input}`}
