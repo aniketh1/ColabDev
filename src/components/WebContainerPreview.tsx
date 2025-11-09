@@ -223,12 +223,24 @@ export function WebContainerPreview({ projectId, techStack, files }: WebContaine
 
       {/* Error Message */}
       {status === 'error' && (
-        <div className="bg-red-50 border-l-4 border-red-500 p-4">
+        <div className="bg-red-50 dark:bg-red-950/30 border-l-4 border-red-500 p-4">
           <div className="flex items-start">
-            <AlertCircle className="h-5 w-5 text-red-500 mt-0.5 mr-3" />
+            <AlertCircle className="h-5 w-5 text-red-500 mt-0.5 mr-3 flex-shrink-0" />
             <div>
-              <h3 className="text-sm font-medium text-red-800">Failed to start preview</h3>
-              <p className="mt-1 text-sm text-red-700">{error}</p>
+              <h3 className="text-sm font-medium text-red-800 dark:text-red-400">Failed to start preview</h3>
+              <p className="mt-1 text-sm text-red-700 dark:text-red-300">{error}</p>
+              {error.includes('Unable to create more instances') && (
+                <div className="mt-3 text-xs text-red-600 dark:text-red-400">
+                  <p className="font-semibold">WebContainer instance limit reached.</p>
+                  <p className="mt-1">Please close other preview windows and refresh the page.</p>
+                </div>
+              )}
+              {error.includes('Cross-Origin') && (
+                <div className="mt-3 text-xs text-red-600 dark:text-red-400">
+                  <p className="font-semibold">CORS headers required.</p>
+                  <p className="mt-1">The server needs to be restarted with the new headers. Please restart your dev server.</p>
+                </div>
+              )}
             </div>
           </div>
         </div>
