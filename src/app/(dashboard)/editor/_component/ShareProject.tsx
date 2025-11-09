@@ -17,9 +17,10 @@ import Axios from "@/lib/Axios";
 interface ShareProjectProps {
   projectId: string;
   projectName: string;
+  onCollaboratorAdded?: () => void;
 }
 
-export function ShareProject({ projectId, projectName }: ShareProjectProps) {
+export function ShareProject({ projectId, projectName, onCollaboratorAdded }: ShareProjectProps) {
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -52,6 +53,10 @@ export function ShareProject({ projectId, projectName }: ShareProjectProps) {
         toast.success(`${email} added as collaborator!`);
         setEmail("");
         setOpen(false);
+        // Refresh project data to show updated collaborators
+        if (onCollaboratorAdded) {
+          onCollaboratorAdded();
+        }
       }
     } catch (error: any) {
       const errorMessage = error?.response?.data?.error || "Failed to add collaborator";

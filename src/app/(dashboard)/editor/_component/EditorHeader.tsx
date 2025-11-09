@@ -169,6 +169,7 @@ const EditorHeader = () => {
           <ShareProject
             projectId={projectId as string}
             projectName={data.name || "Project"}
+            onCollaboratorAdded={fetchData}
           />
         )}
         
