@@ -6,7 +6,6 @@ import { useForm } from "react-hook-form";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -72,25 +71,32 @@ const RegisterPage = () => {
   }
 
   return (
-    <div className="lg:p-10 space-y-7">
-      <h1 className="text-xl font-semibold text-center">Create Account</h1>
+    <div className="lg:p-10 space-y-7 max-w-lg mx-auto w-full">
+      <div className="text-center space-y-2 mb-8">
+        <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
+          Create Account
+        </h1>
+        <p className="text-muted-foreground">Start your coding journey with us</p>
+      </div>
+      
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
-          className="space-y-4 max-w-md mx-auto"
+          className="space-y-5"
         >
           <FormField
             control={form.control}
             name="name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Name</FormLabel>
+                <FormLabel className="text-base">Full Name</FormLabel>
                 <FormControl>
                   <Input
-                    placeholder="Enter your name"
+                    placeholder="John Doe"
                     {...field}
                     disabled={isLoading}
                     value={field.value ?? ""}
+                    className="h-11 bg-background border-2 focus:border-primary transition-colors"
                   />
                 </FormControl>
                 <FormMessage />
@@ -102,13 +108,14 @@ const RegisterPage = () => {
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Email</FormLabel>
+                <FormLabel className="text-base">Email Address</FormLabel>
                 <FormControl>
                   <Input
-                    placeholder="Enter your email"
+                    placeholder="name@example.com"
                     {...field}
                     disabled={isLoading}
                     value={field.value ?? ""}
+                    className="h-11 bg-background border-2 focus:border-primary transition-colors"
                   />
                 </FormControl>
                 <FormMessage />
@@ -120,14 +127,15 @@ const RegisterPage = () => {
             name="password"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Password</FormLabel>
+                <FormLabel className="text-base">Password</FormLabel>
                 <FormControl>
                   <Input
-                    placeholder="Enter your password"
+                    placeholder="Create a strong password"
                     {...field}
                     disabled={isLoading}
                     type="password"
                     value={field.value ?? ""}
+                    className="h-11 bg-background border-2 focus:border-primary transition-colors"
                   />
                 </FormControl>
                 <FormMessage />
@@ -139,35 +147,45 @@ const RegisterPage = () => {
             name="confirmPassword"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Confirm Password</FormLabel>
+                <FormLabel className="text-base">Confirm Password</FormLabel>
                 <FormControl>
                   <Input
-                    placeholder="Enter your confirm password"
+                    placeholder="Re-enter your password"
                     {...field}
                     disabled={isLoading}
                     type="password"
                     value={field.value ?? ""}
+                    className="h-11 bg-background border-2 focus:border-primary transition-colors"
                   />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
-          <Button disabled={isLoading} type="submit" className="w-full cursor-pointer">
-            {
-              isLoading ? "Loading..." : "Create Account"
-            }   
+          <Button 
+            disabled={isLoading} 
+            type="submit" 
+            className="w-full h-11 cursor-pointer text-base font-semibold shadow-lg hover:shadow-xl transition-all"
+          >
+            {isLoading ? (
+              <span className="flex items-center gap-2">
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                Creating Account...
+              </span>
+            ) : (
+              "Create Account"
+            )}
           </Button>
         </form>
       </Form>
 
-      <div className="max-w-md mx-auto">
-          <p>
-            Already have account ? {" "} 
-            <Link href={"/login"} className="text-primary drop-shadow-md">
-              Login
-            </Link> 
-          </p>
+      <div className="text-center pt-4 border-t border-border">
+        <p className="text-muted-foreground">
+          Already have an account?{" "}
+          <Link href={"/login"} className="text-primary font-semibold hover:underline">
+            Sign In
+          </Link>
+        </p>
       </div>
     </div>
   );

@@ -2,6 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import UserAvatar from "@/components/UserAvatar";
+import LogoIcon from "@/components/LogoIcon";
 import Axios from "@/lib/Axios";
 import {
   AppWindow,
@@ -89,7 +90,7 @@ const EditorHeader = () => {
   console.log("project details", data);
 
   return (
-    <header className="bg-gradient-to-r from-background via-background to-background border-b border-border/50 h-16 sticky top-0 z-50 flex items-center px-6 backdrop-blur-xl bg-background/95 shadow-sm">
+    <header className="bg-background border-b border-border h-16 sticky top-0 z-50 flex items-center px-6 shadow-sm">
       {/***left side */}
       <div className="flex items-center gap-4 flex-1">
         <Button
@@ -100,6 +101,8 @@ const EditorHeader = () => {
         >
           <ArrowLeft className="h-5 w-5 group-hover:-translate-x-0.5 transition-transform" />
         </Button>
+
+        <LogoIcon w={36} h={36} href="/dashboard" />
 
         <div className="flex items-center gap-3 px-3 py-2 rounded-lg bg-muted/30 backdrop-blur-sm border border-border/50">
           <div className="w-1 h-6 bg-gradient-to-b from-primary via-primary/70 to-primary/40 rounded-full" />

@@ -211,9 +211,56 @@ const runFrontendCode = async (
   language: Language
 ): Promise<RunCodeOutput> => {
   try {
-    // Determine loader based on language
+    // Check if code is HTML (starts with DOCTYPE or html tag)
+    const isHTML = /^<!DOCTYPE|^<html/i.test(code.trim());
+
+    // Handle HTML directly - no transformation needed
+    if (language === 'html' || isHTML) {
+      return {
+        type: 'iframe',
+        output: code,
+      };
+    }
+
+    // Handle CSS by wrapping in basic HTML
+    if (language === 'css') {
+      const html = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CSS Preview</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    ${code}
+  </style>
+</head>
+<body>
+  <h1 style="color: #333; margin-bottom: 20px;">CSS Preview</h1>
+  <div style="background: #f5f5f5; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+    <h2 style="color: #666; margin-bottom: 10px;">Sample Content</h2>
+    <p style="color: #888; line-height: 1.6;">This is sample content to demonstrate your CSS styles. Add your own HTML structure and CSS rules above to see them in action.</p>
+    <button style="background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 4px; margin-top: 10px; cursor: pointer;">Sample Button</button>
+  </div>
+</body>
+</html>
+      `.trim();
+
+      return {
+        type: 'iframe',
+        output: html,
+      };
+    }
+
+    // For JavaScript/React/Vue - determine loader and transform
     const loader: 'js' | 'jsx' | 'ts' | 'tsx' =
-      language === 'react' ? 'jsx' : 'js';
+      language === 'react' || language === 'vue' ? 'jsx' : 'js';
 
     // Build the code (Babel will be loaded automatically)
     const bundledCode = await buildCode(code, { loader });

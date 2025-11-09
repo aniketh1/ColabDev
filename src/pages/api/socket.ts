@@ -19,7 +19,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       path: '/api/socket',
       addTrailingSlash: false,
       cors: {
-        origin: process.env.NEXTAUTH_URL || 'http://localhost:3000',
+        origin: process.env.NEXTAUTH_URL || 'https://colab-dev-rose.vercel.app',
         credentials: true,
       },
     });

@@ -1,53 +1,53 @@
 'use client'
-import Logo from '@/components/Logo'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import LogoIcon from '@/components/LogoIcon'
 import { Button } from '@/components/ui/button'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { SidebarTrigger, SidebarTriggerDashboard } from '@/components/ui/sidebar'
+import { SidebarTriggerDashboard } from '@/components/ui/sidebar'
 import UserAvatar from '@/components/UserAvatar'
-import { getAvatarName } from '@/lib/getAvatarName'
-import { signOut, useSession } from 'next-auth/react'
-import React, { useEffect } from 'react'
+import { useSession } from 'next-auth/react'
+import React from 'react'
+import { Moon, Sun } from 'lucide-react'
+import { useTheme } from 'next-themes'
 
 const DashboardHeader = () => {
   const session = useSession()
-  console.log("session ",session)
+  const { theme, setTheme } = useTheme()
 
   return (
-    <div
-        className='h-14 bg-white flex items-center px-4 sticky top-0 z-40'
-    >
-      <div className='md:hidden'>
-        <Logo w={80}/>
+    <header className='h-16 bg-white dark:bg-black border-b border-border flex items-center px-4 lg:px-6 sticky top-0 z-40 shadow-sm'>
+      {/* Logo Icon - Always visible */}
+      <div className='mr-4'>
+        <LogoIcon w={40} h={40} href="/dashboard" />
       </div>
 
-      <div className='hidden md:block'>
-        <span className='font-semibold'>Hii Welcome</span> {session.data?.user.name}
+      <div className='hidden md:flex items-center gap-2'>
+        <span className='text-lg font-semibold bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent'>
+          Welcome back,
+        </span>
+        <span className='text-lg font-bold'>{session.data?.user.name}</span>
       </div>
 
-      <div className='ml-auto hidden md:block'>
+      <div className='ml-auto flex items-center gap-3'>
+        {/* Theme Toggle Button */}
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+          className='rounded-full w-10 h-10 border-2 hover:border-primary transition-all'
+        >
+          <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+          <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+          <span className="sr-only">Toggle theme</span>
+        </Button>
+
+        <div className='hidden md:block'>
           <UserAvatar/>
-          {/* <Popover>
-            <PopoverTrigger>
-                <Avatar className='w-10 h-10 drop-shadow cursor-pointer' >
-                    <AvatarImage src={session.data?.user?.image as string}/>
-                    <AvatarFallback>{getAvatarName(session.data?.user.name as string)}</AvatarFallback>
-                </Avatar>
-            </PopoverTrigger>
-            <PopoverContent>
-              <p className='font-semibold py-2'>{session.data?.user?.name}</p>
-              <div className='p-[0.5px] bg-gray-200'></div>
-
-              <Button variant={'destructive'} className='w-full mt-4 cursor-pointer' onClick={()=>signOut()}>Logout</Button>
-            </PopoverContent>
-          </Popover> */}
+        </div>
       </div>
 
-      <div className='md:hidden ml-auto'>
+      <div className='md:hidden ml-3'>
         <SidebarTriggerDashboard/>
       </div>
-
-    </div>
+    </header>
   )
 }
 

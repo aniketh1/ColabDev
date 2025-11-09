@@ -6,7 +6,6 @@ import { useForm } from "react-hook-form";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -61,25 +60,32 @@ const LoginPage = () => {
   }
 
   return (
-    <div className="lg:p-10 space-y-7">
-      <h1 className="text-xl font-semibold text-center">Login</h1>
+    <div className="lg:p-10 space-y-7 max-w-lg mx-auto w-full">
+      <div className="text-center space-y-2 mb-8">
+        <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
+          Welcome Back
+        </h1>
+        <p className="text-muted-foreground">Sign in to continue to your workspace</p>
+      </div>
+      
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
-          className="space-y-4 max-w-md mx-auto"
+          className="space-y-5"
         >
           <FormField
             control={form.control}
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Email</FormLabel>
+                <FormLabel className="text-base">Email Address</FormLabel>
                 <FormControl>
                   <Input
-                    placeholder="Enter your email"
+                    placeholder="name@example.com"
                     {...field}
                     disabled={isLoading}
                     value={field.value ?? ""}
+                    className="h-11 bg-background border-2 focus:border-primary transition-colors"
                   />
                 </FormControl>
                 <FormMessage />
@@ -91,7 +97,7 @@ const LoginPage = () => {
             name="password"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Password</FormLabel>
+                <FormLabel className="text-base">Password</FormLabel>
                 <FormControl>
                   <Input
                     placeholder="Enter your password"
@@ -99,6 +105,7 @@ const LoginPage = () => {
                     disabled={isLoading}
                     type="password"
                     value={field.value ?? ""}
+                    className="h-11 bg-background border-2 focus:border-primary transition-colors"
                   />
                 </FormControl>
                 <FormMessage />
@@ -106,27 +113,39 @@ const LoginPage = () => {
             )}
           />
 
-          <div className="ml-auto w-fit -mt-3">
-            <Link href={"/forgot-password"} className="hover:underline">
-              Forgot Password ?
+          <div className="flex justify-end">
+            <Link 
+              href={"/forgot-password"} 
+              className="text-sm text-primary hover:underline font-medium"
+            >
+              Forgot Password?
             </Link>
           </div>
 
-          <Button disabled={isLoading} type="submit" className="w-full cursor-pointer">
-            {
-              isLoading ? "Loading..." : "Login"
-            }   
+          <Button 
+            disabled={isLoading} 
+            type="submit" 
+            className="w-full h-11 cursor-pointer text-base font-semibold shadow-lg hover:shadow-xl transition-all"
+          >
+            {isLoading ? (
+              <span className="flex items-center gap-2">
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                Signing in...
+              </span>
+            ) : (
+              "Sign In"
+            )}
           </Button>
         </form>
       </Form>
 
-      <div className="max-w-md mx-auto">
-          <p>
-            Don't have account ? {" "} 
-            <Link href={"/register"} className="text-primary drop-shadow-md">
-              Create here
-            </Link> 
-          </p>
+      <div className="text-center pt-4 border-t border-border">
+        <p className="text-muted-foreground">
+          Don&apos;t have an account?{" "}
+          <Link href={"/register"} className="text-primary font-semibold hover:underline">
+            Create Account
+          </Link>
+        </p>
       </div>
     </div>
   );
