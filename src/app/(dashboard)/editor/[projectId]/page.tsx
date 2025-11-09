@@ -13,8 +13,6 @@ import { useEditorContext } from "../_provider/EditorProvider";
 import debounce from "@/lib/debounce";
 import { LiveblocksProvider } from "@/components/LiveblocksProvider";
 import { useLiveblocksCollaboration } from "@/hooks/useLiveblocksCollaboration";
-import { useLiveblocksCollaborationReal } from "@/hooks/useLiveblocksCollaborationReal";
-import { useIsLiveblocksAvailable } from "@/contexts/LiveblocksAvailabilityContext";
 import { cn } from "@/lib/utils";
 
 
@@ -29,10 +27,9 @@ const CodeEditor = () => {
   const { isLoading, setIsLoading, setCode, projectAccess } = useEditorContext();
   const editorViewRef = useRef<EditorView | null>(null);
   const isRemoteUpdateRef = useRef(false);
-  const { isAvailable } = useIsLiveblocksAvailable();
   const lastSyncedContentRef = useRef<string>("");
 
-  // Choose the right collaboration hook based on availability
+  // Set up collaboration options
   const collaborationOptions = {
     fileName: file || '',
     onContentUpdate: (newContent: string) => {
@@ -49,14 +46,9 @@ const CodeEditor = () => {
     },
   };
 
-  // Always call both hooks, but only use one based on availability
-  const realCollab = useLiveblocksCollaborationReal(collaborationOptions);
-  const fallbackCollab = useLiveblocksCollaboration(collaborationOptions);
-  
-  // Select which collaboration system to use
-  const { isConnected, broadcastChange, notifyFileSaved } = isAvailable
-    ? realCollab
-    : fallbackCollab;
+  // Always use fallback collaboration (it works with or without Liveblocks)
+  // The real-time features will work once Liveblocks is fully loaded
+  const { isConnected, broadcastChange, notifyFileSaved } = useLiveblocksCollaboration(collaborationOptions);
 
   const ref = useCallback((node: HTMLElement | null) => {
     if (!node) return;

@@ -14,7 +14,6 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarSeparator,
 } from "@/components/ui/sidebar";
 import { getAvatarName } from "@/lib/getAvatarName";
 import { cn } from "@/lib/utils";
@@ -31,24 +30,20 @@ const DashboardSidebar = () => {
   const pathname = usePathname();
   const session = useSession();
   const [data,setData] = useState([])
-  const [isLoading,setIsLoading] = useState(true)
   const [sidebarWidth, setSidebarWidth] = useState(280) // Default width
   const [isResizing, setIsResizing] = useState(false)
   const sidebarRef = useRef<HTMLDivElement>(null)
 
 
   const fetchData = async()=>{
-    setIsLoading(true)
     try {
         const response = await Axios.get("/api/recent-project-update")
 
         if(response.status === 200){
           setData(response.data.data)
         }
-    } catch (error) {
-      
-    }finally{
-      setIsLoading(false)
+    } catch {
+      // Silently fail - recent projects will be empty
     }
   }
 
@@ -101,7 +96,6 @@ const DashboardSidebar = () => {
     }
   }, [isResizing])
 
-  console.log("recent project",data)
   return (
     <div 
       ref={sidebarRef}
