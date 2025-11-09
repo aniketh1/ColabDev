@@ -67,6 +67,13 @@ export async function POST(request : NextRequest){
             )
         }
 
+        console.log('📤 Uploading file to S3:', {
+            fileName: finalFileName,
+            projectId,
+            contentLength: finalContent.length,
+            contentPreview: finalContent.substring(0, 100) + (finalContent.length > 100 ? '...' : '')
+        });
+
         // Upload file to S3 with content
         const s3Result = await uploadFileToS3(
             session.user.id,
@@ -75,22 +82,40 @@ export async function POST(request : NextRequest){
             finalContent
         );
 
+        console.log('📤 S3 upload result:', {
+            fileName: finalFileName,
+            success: s3Result.success,
+            s3Key: s3Result.key
+        });
+
         if (s3Result.success) {
             // Create metadata in MongoDB
-            await FileModel.create({
+            const createdFile = await FileModel.create({
                 name : finalFileName,
                 projectId : projectId,
                 content: "",
                 s3Key: s3Result.key,
                 storageType: 's3'
             });
+            
+            console.log('✅ File created in DB with S3 reference:', {
+                fileId: createdFile._id.toString(),
+                fileName: finalFileName,
+                s3Key: s3Result.key
+            });
         } else {
             // Fallback to MongoDB if S3 fails
-            await FileModel.create({
+            const createdFile = await FileModel.create({
                 name : finalFileName,
                 projectId : projectId,
                 content: finalContent,
                 storageType: 'mongodb'
+            });
+            
+            console.log('⚠️ File created in MongoDB (S3 failed):', {
+                fileId: createdFile._id.toString(),
+                fileName: finalFileName,
+                contentLength: finalContent.length
             });
         }
 
@@ -99,7 +124,11 @@ export async function POST(request : NextRequest){
             { status : 201 }
         )
 
-    } catch (error) {
+    } catch (error: any) {
+        console.error('❌ Error creating file:', {
+            error: error.message,
+            stack: error.stack
+        });
         return NextResponse.json(
             { error : "Something went wrong"},
             { status : 500 }
@@ -162,7 +191,10 @@ export async function GET(request : NextRequest){
             },
             { status : 200 }
         )
-    } catch (error) {
+    } catch (error: any) {
+        console.error('❌ Error getting files:', {
+            error: error.message
+        });
         return NextResponse.json(
             { error : "Something went wrong"},
             { status : 500 }

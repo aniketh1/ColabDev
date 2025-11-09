@@ -20,6 +20,15 @@ export async function uploadFileToS3(
     try {
         const key = generateS3Key(userId, projectId, fileName);
         
+        console.log('📤 S3 Upload Starting:', {
+            userId: userId.substring(0, 8) + '...',
+            projectId,
+            fileName,
+            key,
+            contentLength: content.length,
+            bucket: S3_BUCKET_NAME
+        });
+        
         const command = new PutObjectCommand({
             Bucket: S3_BUCKET_NAME,
             Key: key,
@@ -29,9 +38,20 @@ export async function uploadFileToS3(
 
         await s3Client.send(command);
 
+        console.log('✅ S3 Upload Success:', {
+            fileName,
+            key,
+            contentLength: content.length
+        });
+
         return { success: true, key };
     } catch (error: any) {
-        console.error('S3 Upload Error:', error);
+        console.error('❌ S3 Upload Error:', {
+            fileName,
+            error: error.message,
+            code: error.code,
+            statusCode: error.$metadata?.httpStatusCode
+        });
         return { success: false, key: '', error: error.message };
     }
 }
@@ -47,6 +67,14 @@ export async function getFileFromS3(
     try {
         const key = generateS3Key(userId, projectId, fileName);
         
+        console.log('📥 S3 Get File Starting:', {
+            userId: userId.substring(0, 8) + '...',
+            projectId,
+            fileName,
+            key,
+            bucket: S3_BUCKET_NAME
+        });
+        
         const command = new GetObjectCommand({
             Bucket: S3_BUCKET_NAME,
             Key: key,
@@ -55,9 +83,21 @@ export async function getFileFromS3(
         const response = await s3Client.send(command);
         const content = await response.Body?.transformToString();
 
+        console.log('✅ S3 Get File Success:', {
+            fileName,
+            key,
+            contentLength: content?.length || 0,
+            contentPreview: content?.substring(0, 100) + (content && content.length > 100 ? '...' : '')
+        });
+
         return { success: true, content };
     } catch (error: any) {
-        console.error('S3 Get File Error:', error);
+        console.error('❌ S3 Get File Error:', {
+            fileName,
+            error: error.message,
+            code: error.code,
+            statusCode: error.$metadata?.httpStatusCode
+        });
         return { success: false, error: error.message };
     }
 }
