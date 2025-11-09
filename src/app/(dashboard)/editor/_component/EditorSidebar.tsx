@@ -46,7 +46,24 @@ const EditorSidebar = () => {
       );
 
       if (response.status === 200) {
-        setFileList(response.data.data || []);
+        const files = response.data.data || [];
+        setFileList(files);
+        
+        // If no files exist, create default HTML file
+        if (files.length === 0) {
+          console.log('No files found, creating default index.html');
+          try {
+            await Axios.post("/api/project-file", {
+              projectId,
+              fileName: "index.html",
+              content: '<!DOCTYPE html>\n<html lang="en">\n<head>\n  <meta charset="UTF-8">\n  <meta name="viewport" content="width=device-width, initial-scale=1.0">\n  <title>My Project</title>\n</head>\n<body>\n  <h1>Welcome!</h1>\n</body>\n</html>',
+            });
+            // Refetch after creating
+            fetchAllFile();
+          } catch (err) {
+            console.error('Failed to create default file:', err);
+          }
+        }
       }
     } catch (error: any) {
       toast.error(error.response.data.error);

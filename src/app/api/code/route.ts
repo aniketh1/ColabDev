@@ -53,9 +53,33 @@ export async function POST(request : NextRequest){
         })
 
         if (!fileMetadata) {
+            // File doesn't exist yet - create empty file automatically for better UX
+            // Only allow auto-creation for basic HTML/CSS/JS files or if user is owner/collaborator
+            const allowedAutoCreate = ['index.html', 'style.css', 'script.js', 'App.jsx', 'App.vue', 'main.jsx', 'main.js'];
+            const canAutoCreate = allowedAutoCreate.includes(fileName) || isOwner || isCollaborator;
+            
+            if (!canAutoCreate) {
+                return NextResponse.json(
+                    { error : "File not found"},
+                    { status : 404 }
+                )
+            }
+            
+            console.log(`File ${fileName} not found for project ${projectId}, creating empty file`);
+            
+            const newFile = await FileModel.create({
+                name: fileName,
+                projectId: projectId,
+                content: "",
+                storageType: 'mongodb'
+            });
+
             return NextResponse.json(
-                { error : "File not found"},
-                { status : 404 }
+                { 
+                    message : "File created and returned",
+                    data : newFile
+                },
+                { status : 200 }
             )
         }
 

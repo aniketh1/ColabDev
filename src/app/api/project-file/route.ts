@@ -31,6 +31,30 @@ export async function POST(request : NextRequest){
 
         await connectDB()
 
+        // Check if user has access to this project
+        const ProjectModel = (await import("@/models/ProjectModel")).default;
+        const project = await ProjectModel.findById(projectId);
+        
+        if (!project) {
+            return NextResponse.json(
+                { error : "Project not found"},
+                { status : 404 }
+            )
+        }
+
+        // Check if user is owner or collaborator (public projects are read-only)
+        const isOwner = project.userId.toString() === session.user.id;
+        const isCollaborator = project.collaborators?.some(
+            (collabId: any) => collabId.toString() === session.user.id
+        );
+
+        if (!isOwner && !isCollaborator) {
+            return NextResponse.json(
+                { error : "You don't have permission to create files in this project"},
+                { status : 403 }
+            )
+        }
+
         const checkFileName = await FileModel.findOne({ 
             name : finalFileName,
             projectId : projectId
