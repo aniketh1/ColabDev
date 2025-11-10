@@ -1,8 +1,17 @@
+"use client";
+
 import EditorHeader from "./_component/EditorHeader";
 import EditorSidebar from "./_component/EditorSidebar";
 import FileOpen from "./_component/FileOpen";
 import { EditorProviderComp } from "./_provider/EditorProvider";
 import BrowerRunCode from "./_component/BrowerRunCode";
+import dynamic from "next/dynamic";
+
+// Dynamically import ResizableSidebar to avoid SSR issues
+const ResizableSidebar = dynamic(() => import("@/components/ResizableSidebar"), {
+  ssr: false,
+  loading: () => <div className="w-[20%] border-r border-[#2d2d2d] bg-[#252526]"><EditorSidebar /></div>
+});
 
 export default function EditorLayout({
   children,
@@ -20,7 +29,7 @@ export default function EditorLayout({
         {/* Main Content Area */}
         <div className="flex-1 flex overflow-hidden">
           <BrowerRunCode>
-            {/* Activity Bar - Ultra thin left strip (48px) */}
+            {/* Activity Bar - Ultra thin left strip (48px) - hidden on mobile */}
             <div className="hidden md:flex w-[48px] bg-[#333333] border-r border-[#2d2d2d] flex-col items-center py-2 gap-3 flex-shrink-0">
               <div className="w-12 h-12 flex items-center justify-center cursor-pointer hover:bg-[#2a2d2e] transition-colors relative group">
                 <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
@@ -30,12 +39,17 @@ export default function EditorLayout({
               </div>
             </div>
 
-            {/* Sidebar - Explorer panel */}
-            <div className="hidden md:flex w-[280px] lg:w-[300px] border-r border-[#2d2d2d] bg-[#252526] flex-shrink-0">
+            {/* Sidebar - Fixed 20% on desktop, resizable on tablet, hidden on mobile */}
+            <div className="hidden lg:flex lg:w-[20%] border-r border-[#2d2d2d] bg-[#252526] flex-shrink-0">
               <EditorSidebar />
             </div>
 
-            {/* Main Editor Area */}
+            {/* Resizable Sidebar for Tablet */}
+            <div className="hidden md:flex lg:hidden">
+              <ResizableSidebar className="border-r border-[#2d2d2d] bg-[#252526]" />
+            </div>
+
+            {/* Main Editor Area - 80% on desktop, remaining space on tablet, 100% on mobile */}
             <main className="flex-1 flex flex-col overflow-hidden bg-[#1e1e1e] min-w-0">
               {/* Tab Bar */}
               <div className="flex-shrink-0 h-[35px] bg-[#252526] border-b border-[#2d2d2d]">

@@ -22,7 +22,7 @@ const ResizableSidebar: React.FC<ResizableSidebarProps> = ({ className }) => {
         right: {
           width: '4px',
           right: '0',
-          backgroundColor: 'hsl(var(--border))',
+          backgroundColor: '#2d2d2d',
           cursor: 'ew-resize',
           opacity: 0.5,
           transition: 'opacity 0.2s',

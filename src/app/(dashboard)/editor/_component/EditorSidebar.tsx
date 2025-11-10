@@ -96,18 +96,18 @@ const EditorSidebar = () => {
   }, []);
   
   return (
-    <div className="h-full w-full flex flex-col bg-[#0d1117] text-[#c9d1d9]">
+    <div className="h-full w-full flex flex-col bg-[#252526] text-white">
       {/* Header */}
-      <div className="flex-shrink-0 h-[36px] flex items-center justify-between px-3 border-b border-[#21262d] bg-gradient-to-r from-[#0d1117] to-[#161b22]">
-        <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.05em] font-bold text-[#8b949e]">
-          <FolderOpen className="h-3.5 w-3.5 text-[#58a6ff]" />
+      <div className="flex-shrink-0 h-[36px] flex items-center justify-between px-3 border-b border-[#2d2d2d] bg-[#323233]">
+        <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.05em] font-bold text-[#cccccc]">
+          <FolderOpen className="h-3.5 w-3.5 text-[#007acc]" />
           <span>Explorer</span>
         </div>
         <Button
           size="icon"
           variant="ghost"
           onClick={() => setOpenAddFile(true)}
-          className="h-7 w-7 hover:bg-[#1f6feb]/10 text-[#8b949e] hover:text-[#58a6ff] transition-all duration-200 rounded-md"
+          className="h-7 w-7 hover:bg-[#2a2d2e] text-[#cccccc] hover:text-[#007acc] transition-all duration-200 rounded-md"
         >
           <FilePlus className="h-3.5 w-3.5" />
         </Button>
@@ -118,26 +118,26 @@ const EditorSidebar = () => {
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-16 gap-3">
             <div className="relative">
-              <div className="h-8 w-8 rounded-full border-2 border-[#1f6feb]/20 border-t-[#1f6feb] animate-spin" />
-              <div className="absolute inset-0 h-8 w-8 rounded-full border-2 border-[#1f6feb]/10 animate-ping" />
+              <div className="h-8 w-8 rounded-full border-2 border-[#007acc]/20 border-t-[#007acc] animate-spin" />
+              <div className="absolute inset-0 h-8 w-8 rounded-full border-2 border-[#007acc]/10 animate-ping" />
             </div>
-            <p className="text-[#8b949e] text-xs font-medium">Loading files...</p>
+            <p className="text-[#cccccc] text-xs font-medium">Loading files...</p>
           </div>
         ) : fileList.length < 1 ? (
           <div className="flex flex-col items-center justify-center py-20 gap-4 px-4">
             <div className="relative">
-              <div className="absolute inset-0 bg-[#1f6feb]/5 blur-2xl rounded-full" />
-              <File className="h-14 w-14 text-[#30363d] relative" />
+              <div className="absolute inset-0 bg-[#007acc]/5 blur-2xl rounded-full" />
+              <File className="h-14 w-14 text-[#666666] relative" />
             </div>
             <div className="text-center">
-              <p className="text-[#8b949e] text-sm font-medium mb-1">No files in workspace</p>
-              <p className="text-[#6e7681] text-xs">Start by creating your first file</p>
+              <p className="text-[#cccccc] text-sm font-medium mb-1">No files in workspace</p>
+              <p className="text-[#999999] text-xs">Start by creating your first file</p>
             </div>
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setOpenAddFile(true)}
-              className="mt-2 text-[#58a6ff] hover:text-[#79c0ff] hover:bg-[#1f6feb]/10 text-xs h-8 px-4 rounded-md font-semibold"
+              className="mt-2 text-[#007acc] hover:text-[#4da6ff] hover:bg-[#007acc]/10 text-xs h-8 px-4 rounded-md font-semibold"
             >
               <FilePlus className="h-3.5 w-3.5 mr-2" />
               New File
@@ -146,10 +146,10 @@ const EditorSidebar = () => {
         ) : (
           <div className="py-2">
             {/* Section Header */}
-            <button className="w-full flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold text-[#8b949e] uppercase tracking-wide hover:bg-[#161b22] transition-colors">
+            <button className="w-full flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold text-[#cccccc] uppercase tracking-wide hover:bg-[#2a2d2e] transition-colors">
               <ChevronRight className="h-3 w-3" />
               <span>Project Files</span>
-              <span className="ml-auto text-[#6e7681] text-[10px] font-normal">{fileList.length}</span>
+              <span className="ml-auto text-[#999999] text-[10px] font-normal">{fileList.length}</span>
             </button>
             
             {/* File Items */}
@@ -162,9 +162,9 @@ const EditorSidebar = () => {
                     className={`
                       w-full flex items-center gap-2.5 px-2 py-1.5 text-left rounded-md
                       transition-all duration-150 group
-                      ${isActive 
-                        ? 'bg-gradient-to-r from-[#1f6feb]/20 to-[#1f6feb]/10 text-[#58a6ff] shadow-sm border border-[#1f6feb]/30' 
-                        : 'text-[#c9d1d9] hover:bg-[#161b22] hover:text-[#58a6ff]'
+                      ${isActive
+                        ? 'bg-[#007acc]/20 text-[#007acc] shadow-sm border border-[#007acc]/30'
+                        : 'text-[#cccccc] hover:bg-[#2a2d2e] hover:text-[#007acc]'
                       }
                     `}
                     onClick={() => {
@@ -183,7 +183,7 @@ const EditorSidebar = () => {
                     </div>
                     <span className="text-[13px] truncate flex-1 font-medium">{file.name}</span>
                     {isActive && (
-                      <div className="w-1.5 h-1.5 rounded-full bg-[#58a6ff] shadow-[0_0_6px_rgba(88,166,255,0.6)]" />
+                      <div className="w-1.5 h-1.5 rounded-full bg-[#007acc] shadow-[0_0_6px_rgba(0,122,204,0.6)]" />
                     )}
                   </button>
                 );
@@ -195,8 +195,8 @@ const EditorSidebar = () => {
 
       {/* Add File Dialog */}
       <Dialog open={openAddFile} onOpenChange={setOpenAddFile}>
-        <DialogContent className="bg-[#161b22] border-[#30363d] text-[#c9d1d9] shadow-2xl">
-          <DialogTitle className="text-[#c9d1d9] text-base font-bold">
+        <DialogContent className="bg-[#252526] border-[#2d2d2d] text-white shadow-2xl">
+          <DialogTitle className="text-white text-base font-bold">
             Create New File
           </DialogTitle>
           <div className="space-y-5 mt-2">
@@ -210,24 +210,24 @@ const EditorSidebar = () => {
                   handleCreateFile();
                 }
               }}
-              className="bg-[#0d1117] border-[#30363d] text-[#c9d1d9] placeholder:text-[#6e7681] focus:border-[#1f6feb] focus:ring-1 focus:ring-[#1f6feb] text-sm h-10 rounded-md"
+              className="bg-[#3c3c3c] border-[#2d2d2d] text-white placeholder:text-[#cccccc] focus:border-[#007acc] focus:ring-1 focus:ring-[#007acc] text-sm h-10 rounded-md"
               autoFocus
             />
             <div className="flex gap-3 justify-end pt-2">
-              <Button 
+              <Button
                 variant="ghost"
                 onClick={() => {
                   setOpenAddFile(false);
                   setFileName("");
                 }}
-                className="bg-[#21262d] hover:bg-[#30363d] text-[#c9d1d9] text-sm h-9 px-5 rounded-md font-medium"
+                className="bg-[#2a2d2e] hover:bg-[#3c3c3c] text-[#cccccc] text-sm h-9 px-5 rounded-md font-medium"
               >
                 Cancel
               </Button>
-              <Button 
-                disabled={isLoading || !fileName} 
+              <Button
+                disabled={isLoading || !fileName}
                 onClick={handleCreateFile}
-                className="bg-[#238636] hover:bg-[#2ea043] text-white text-sm h-9 px-5 rounded-md font-semibold shadow-lg shadow-[#238636]/20 disabled:opacity-50"
+                className="bg-[#007acc] hover:bg-[#005999] text-white text-sm h-9 px-5 rounded-md font-semibold shadow-lg shadow-[#007acc]/20 disabled:opacity-50"
               >
                 {isLoading ? "Creating..." : "Create File"}
               </Button>
@@ -241,16 +241,16 @@ const EditorSidebar = () => {
           width: 12px;
         }
         .premium-scrollbar::-webkit-scrollbar-track {
-          background: #0d1117;
-          border-left: 1px solid #21262d;
+          background: #252526;
+          border-left: 1px solid #2d2d2d;
         }
         .premium-scrollbar::-webkit-scrollbar-thumb {
-          background: #30363d;
+          background: #3c3c3c;
           border-radius: 6px;
-          border: 3px solid #0d1117;
+          border: 3px solid #252526;
         }
         .premium-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: #484f58;
+          background: #4e4e4e;
         }
       `}</style>
     </div>
