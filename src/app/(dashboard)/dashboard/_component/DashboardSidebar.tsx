@@ -19,7 +19,7 @@ import { getAvatarName } from "@/lib/getAvatarName";
 import { cn } from "@/lib/utils";
 import { Popover } from "@radix-ui/react-popover";
 import { FileIcon, GripVertical } from "lucide-react";
-import { signOut, useSession } from "next-auth/react";
+import { useUser, useClerk } from "@clerk/nextjs";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React, { useEffect, useState, useRef } from "react";
@@ -28,7 +28,8 @@ import Axios from "@/lib/Axios";
 
 const DashboardSidebar = () => {
   const pathname = usePathname();
-  const session = useSession();
+  const { user } = useUser();
+  const { signOut } = useClerk();
   const [data,setData] = useState([])
   const [sidebarWidth, setSidebarWidth] = useState(280) // Default width
   const [isResizing, setIsResizing] = useState(false)
@@ -151,11 +152,11 @@ const DashboardSidebar = () => {
         <Popover>
           <PopoverTrigger>
             <div className="flex items-center w-full justify-between px-3 py-2 bg-muted/50 hover:bg-muted rounded-lg transition-colors cursor-pointer">
-              <p className="font-semibold text-sm truncate">{session.data?.user?.name}</p>
+              <p className="font-semibold text-sm truncate">{user?.fullName || user?.username}</p>
               <Avatar className="w-8 h-8 border-2 border-border">
-                <AvatarImage src={session.data?.user?.image as string} />
+                <AvatarImage src={user?.imageUrl} />
                 <AvatarFallback className="bg-primary text-primary-foreground text-xs">
-                  {getAvatarName(session.data?.user.name as string)}
+                  {getAvatarName(user?.fullName || user?.username || "User")}
                 </AvatarFallback>
               </Avatar>
             </div>
@@ -163,8 +164,8 @@ const DashboardSidebar = () => {
           <PopoverContent className="w-56">
             <div className="space-y-3">
               <div>
-                <p className="font-semibold">{session.data?.user?.name}</p>
-                <p className="text-xs text-muted-foreground truncate">{session.data?.user?.email}</p>
+                <p className="font-semibold">{user?.fullName || user?.username}</p>
+                <p className="text-xs text-muted-foreground truncate">{user?.primaryEmailAddress?.emailAddress}</p>
               </div>
               <div className="h-px bg-border"></div>
               <Button

@@ -2,9 +2,6 @@ import { NextRequest,NextResponse } from "next/server";
 import { connectDB } from "@/config/connectDB";
 import ProjectModel from "@/models/ProjectModel";
 import { getCurrentUserId } from "@/lib/clerk";
-import FileModel from "@/models/FileModel";
-import { hmltBoilerplateCode, scriptBoilrPlatCode, styleBoilrPlatCode } from "@/lib/sampleCode";
-import { uploadFileToS3 } from "@/lib/s3Operations";
 
 //create project
 export async function POST(request : NextRequest){
@@ -175,9 +172,9 @@ export async function PUT(request : NextRequest){
     try {
         const { name, projectId } = await request.json()
 
-        const session = await getServerSession(authOptions)
+        const userId = await getCurrentUserId()
 
-        if(!session){
+        if(!userId){
             return NextResponse.json(
                 { error : "Unauthorized"},
                 { status : 401 }
@@ -193,7 +190,7 @@ export async function PUT(request : NextRequest){
 
         await connectDB()
 
-        const updateProject = await ProjectModel.findByIdAndUpdate(projectId, {
+        await ProjectModel.findByIdAndUpdate(projectId, {
             name : name
         })
 

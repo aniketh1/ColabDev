@@ -3,13 +3,13 @@ import LogoIcon from '@/components/LogoIcon'
 import { Button } from '@/components/ui/button'
 import { SidebarTriggerDashboard } from '@/components/ui/sidebar'
 import UserAvatar from '@/components/UserAvatar'
-import { useSession } from 'next-auth/react'
+import { useUser } from '@clerk/nextjs'
 import React from 'react'
 import { Moon, Sun } from 'lucide-react'
 import { useTheme } from 'next-themes'
 
 const DashboardHeader = () => {
-  const session = useSession()
+  const { user } = useUser()
   const { theme, setTheme } = useTheme()
 
   return (
@@ -23,7 +23,7 @@ const DashboardHeader = () => {
         <span className='text-lg font-semibold bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent'>
           Welcome back,
         </span>
-        <span className='text-lg font-bold'>{session.data?.user.name}</span>
+        <span className='text-lg font-bold'>{user?.fullName || user?.username}</span>
       </div>
 
       <div className='ml-auto flex items-center gap-3'>
