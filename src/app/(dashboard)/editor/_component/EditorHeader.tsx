@@ -24,6 +24,7 @@ const EditorHeader = () => {
     setOpenBrowser,
     openBrowser,
     setProjectAccess,
+    setTechStack,
   } = useEditorContext();
 
   const fetchData = async () => {
@@ -49,6 +50,11 @@ const EditorHeader = () => {
           };
 
           setProjectAccess(accessData);
+          
+          // Set the tech stack for preview handling
+          if (projectData.techStack) {
+            setTechStack(projectData.techStack);
+          }
         }
       }
     } catch (error: any) {

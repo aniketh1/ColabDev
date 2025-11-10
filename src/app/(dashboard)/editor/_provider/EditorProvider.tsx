@@ -10,6 +10,8 @@ interface TEditorProvider {
     setCode: (value: string) => void;
     mainFileContent: string;
     setMainFileContent: (value: string) => void;
+    techStack: string;
+    setTechStack: (value: string) => void;
     projectAccess: {
         isOwner: boolean;
         isCollaborator: boolean;
@@ -28,6 +30,8 @@ const initialValue = {
     setCode: () => {},
     mainFileContent: '',
     setMainFileContent: () => {},
+    techStack: 'html',
+    setTechStack: () => {},
     projectAccess: {
         isOwner: false,
         isCollaborator: false,
@@ -46,6 +50,7 @@ export function EditorProviderComp({ children }: { children: React.ReactNode }) 
     const [openBrowser, setOpenBrowser] = useState<boolean>(false)
     const [code, setCode] = useState<string>('')
     const [mainFileContent, setMainFileContent] = useState<string>('')
+    const [techStack, setTechStack] = useState<string>('html')
     const [projectAccess, setProjectAccess] = useState({
         isOwner: false,
         isCollaborator: false,
@@ -95,6 +100,8 @@ export function EditorProviderComp({ children }: { children: React.ReactNode }) 
             setCode: handleSetCode,
             mainFileContent: mainFileContent,
             setMainFileContent: handleSetMainFileContent,
+            techStack: techStack,
+            setTechStack: setTechStack,
             projectAccess: projectAccess,
             setProjectAccess: handleSetProjectAccess
         }}>
