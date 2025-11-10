@@ -1,8 +1,7 @@
 import { NextRequest,NextResponse } from "next/server";
 import { connectDB } from "@/config/connectDB";
 import ProjectModel from "@/models/ProjectModel";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/authOptions";
+import { getCurrentUserId } from "@/lib/clerk";
 import FileModel from "@/models/FileModel";
 import { hmltBoilerplateCode, scriptBoilrPlatCode, styleBoilrPlatCode } from "@/lib/sampleCode";
 import { uploadFileToS3 } from "@/lib/s3Operations";
@@ -12,9 +11,9 @@ export async function POST(request : NextRequest){
     try {
         const { name, techStack } = await request.json()
 
-        const session = await getServerSession(authOptions)
+        const userId = await getCurrentUserId()
 
-        if(!session){
+        if(!userId){
             return NextResponse.json(
                 { error : "Unauthorized"},
                 { status : 401 }
@@ -32,7 +31,7 @@ export async function POST(request : NextRequest){
 
         const project = await ProjectModel.create({
             name : name,
-            userId : session.user.id,
+            userId : userId,
             techStack : techStack || 'html'
         })
         
@@ -57,12 +56,12 @@ export async function POST(request : NextRequest){
     }
 }
 
-// all the project with session user id
+// all the project with current user id
 export async function GET(request : NextRequest){
     try {
-        const session = await getServerSession(authOptions)
+        const userId = await getCurrentUserId()
 
-        if(!session){
+        if(!userId){
             return NextResponse.json({
                 error : "Unauthorized"
             },{
@@ -98,15 +97,15 @@ export async function GET(request : NextRequest){
             }
 
             // Check if user is owner, collaborator, or project is public
-            const isOwner = project.userId.toString() === session.user.id;
+            const isOwner = project.userId.toString() === userId;
             const isCollaborator = project.collaborators?.some(
-                (collabId: any) => collabId.toString() === session.user.id
+                (collabId: any) => collabId.toString() === userId
             );
             const isPublic = project.isPublic;
             
             console.log('🔍 Project Access Check:', {
                 projectId,
-                userId: session.user.id,
+                userId: userId,
                 isOwner,
                 isCollaborator,
                 isPublic,
@@ -140,7 +139,7 @@ export async function GET(request : NextRequest){
 
         // For listing projects, show only user's own projects
         const filterProject = {
-            userId : session.user.id
+            userId : userId
         }
 
         const projectList = await ProjectModel.find(filterProject).sort({createdAt : -1 }).skip(skip).limit(limit)

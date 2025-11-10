@@ -1,7 +1,6 @@
 import { Liveblocks } from '@liveblocks/node';
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/authOptions';
+import { getCurrentUser } from '@/lib/clerk';
 
 // Initialize Liveblocks with your secret key (only if available)
 let liveblocks: Liveblocks | null = null;
@@ -22,10 +21,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get the current user session
-    const session = await getServerSession(authOptions);
+    // Get the current user from Clerk
+    const user = await getCurrentUser();
 
-    if (!session || !session.user) {
+    if (!user) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -44,12 +43,12 @@ export async function POST(request: NextRequest) {
 
     // Create a session for the current user
     const sessionData = liveblocks.prepareSession(
-      session.user.id, // User ID
+      user.id, // MongoDB User ID
       {
         userInfo: {
-          name: session.user.name || 'Anonymous',
-          email: session.user.email || '',
-          avatar: session.user.image || '',
+          name: user.name || 'Anonymous',
+          email: user.email || '',
+          avatar: user.avatar || '',
         },
       }
     );

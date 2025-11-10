@@ -413,11 +413,16 @@ const CodeEditor = () => {
 
     editorViewRef.current = view;
 
+    console.log('✅ Editor created successfully for file:', file);
+
     return () => {
+      console.log('🗑️ Destroying editor for file:', file);
       view.destroy();
       editorViewRef.current = null;
     };
-  }, [file, element, content, debouncedSave]);
+  // Note: 'content' is intentionally excluded - it's handled by the content update effect below
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [file, element, debouncedSave]);
 
   // Update editor content when it changes (without recreating editor)
   useEffect(() => {

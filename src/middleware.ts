@@ -1,40 +1,23 @@
-import { withAuth } from 'next-auth/middleware'
-import { NextResponse } from 'next/server'
+import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
 
-export default withAuth(
-    function middleware(req){
-        const token = req.nextauth.token
+const isPublicRoute = createRouteMatcher([
+  '/sign-in(.*)',
+  '/sign-up(.*)',
+  '/',
+  '/api/webhooks(.*)'
+])
 
-        //if the user is logged in and tries to access the login page , register
-        if(token && (
-            req.nextUrl.pathname === '/login' ||
-            req.nextUrl.pathname === '/register'
-        )){
-            return NextResponse.redirect(new URL("/dashboard",req.url))
-        }
-        
-        return NextResponse.next()
-    },
-    {
-        callbacks : {
-            authorized : ({ token, req})=>{
-                const { pathname } = req.nextUrl
-
-                if(pathname === '/login' || pathname === '/register'){
-                    return true
-                }
-                return !!token
-            }
-        }
-    }
-)
-
+export default clerkMiddleware(async (auth, request) => {
+  if (!isPublicRoute(request)) {
+    await auth.protect()
+  }
+})
 
 export const config = {
-    matcher : [
-        '/dashboard/:path*',
-        '/login',
-        '/register',
-        '/editor/:path*'
-    ]
+  matcher: [
+    // Skip Next.js internals and all static files, unless found in search params
+    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
+    // Always run for API routes
+    '/(api|trpc)(.*)',
+  ],
 }

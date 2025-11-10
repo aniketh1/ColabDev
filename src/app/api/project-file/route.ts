@@ -1,16 +1,15 @@
 import { NextRequest,NextResponse } from "next/server";
 import { connectDB } from "@/config/connectDB";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/authOptions";
+import { getCurrentUserId } from "@/lib/clerk";
 import FileModel from "@/models/FileModel";
 import { uploadFileToS3 } from "@/lib/s3Operations";
 
 //create file with projectId
 export async function POST(request : NextRequest){
     try {
-        const session = await getServerSession(authOptions)
+        const userId = await getCurrentUserId()
 
-        if(!session){
+        if(!userId){
             return NextResponse.json(
                 { error : "Unauthorized"},
                 { status : 401 }
@@ -43,9 +42,9 @@ export async function POST(request : NextRequest){
         }
 
         // Check if user is owner or collaborator (public projects are read-only)
-        const isOwner = project.userId.toString() === session.user.id;
+        const isOwner = project.userId.toString() === userId;
         const isCollaborator = project.collaborators?.some(
-            (collabId: any) => collabId.toString() === session.user.id
+            (collabId: any) => collabId.toString() === userId
         );
 
         if (!isOwner && !isCollaborator) {
@@ -76,7 +75,7 @@ export async function POST(request : NextRequest){
 
         // Upload file to S3 with content
         const s3Result = await uploadFileToS3(
-            session.user.id,
+            userId,
             projectId,
             finalFileName,
             finalContent
@@ -139,9 +138,9 @@ export async function POST(request : NextRequest){
 //get file with projectId
 export async function GET(request : NextRequest){
     try {
-        const session = await getServerSession(authOptions)
+        const userId = await getCurrentUserId()
 
-        if(!session){
+        if(!userId){
             return NextResponse.json(
                 { error : "Unauthorized"},
                 { status : 401 }
@@ -167,9 +166,9 @@ export async function GET(request : NextRequest){
         }
 
         // Check if user is owner, collaborator, or project is public
-        const isOwner = project.userId.toString() === session.user.id;
+        const isOwner = project.userId.toString() === userId;
         const isCollaborator = project.collaborators?.some(
-            (collabId: any) => collabId.toString() === session.user.id
+            (collabId: any) => collabId.toString() === userId
         );
         const isPublic = project.isPublic;
 

@@ -1,8 +1,7 @@
 import { NextResponse, NextRequest } from "next/server";
 import { connectDB } from "@/config/connectDB";
 import FileModel from "@/models/FileModel";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/authOptions";
+import { getCurrentUserId } from "@/lib/clerk";
 import { getFileFromS3, uploadFileToS3 } from "@/lib/s3Operations";
 
 // Helper function to check project access
@@ -42,9 +41,9 @@ async function checkProjectAccess(projectId: string, userId: string) {
 
 export async function POST(request: NextRequest) {
     try {
-        const session = await getServerSession(authOptions);
+        const userId = await getCurrentUserId();
 
-        if (!session) {
+        if (!userId) {
             return NextResponse.json(
                 { error: "Unauthorized" },
                 { status: 401 }
@@ -63,7 +62,7 @@ export async function POST(request: NextRequest) {
         await connectDB();
 
         // Check project access
-        const accessCheck = await checkProjectAccess(projectId, session.user.id);
+        const accessCheck = await checkProjectAccess(projectId, userId);
         
         if (!accessCheck.hasAccess) {
             return NextResponse.json(
@@ -75,8 +74,7 @@ export async function POST(request: NextRequest) {
         console.log('📥 GET file request:', {
             fileName,
             projectId,
-            userId: session.user.id,
-            userEmail: session.user.email,
+            userId: userId,
             canEdit: accessCheck.canEdit
         });
 
@@ -129,7 +127,7 @@ export async function POST(request: NextRequest) {
         // Fetch content from S3 if stored there
         if (fileMetadata.storageType === 's3' && fileMetadata.s3Key) {
             try {
-                const s3Result = await getFileFromS3(session.user.id, projectId, fileName);
+                const s3Result = await getFileFromS3(userId, projectId, fileName);
                 
                 if (s3Result.success) {
                     return NextResponse.json(
@@ -172,9 +170,9 @@ export async function POST(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
     try {
-        const session = await getServerSession(authOptions);
+        const userId = await getCurrentUserId();
 
-        if (!session) {
+        if (!userId) {
             return NextResponse.json(
                 { error: "Unauthorized" },
                 { status: 401 }
@@ -185,8 +183,7 @@ export async function PUT(request: NextRequest) {
         const { content, fileId } = body;
 
         console.log('📝 PUT /api/code - Save file request:', {
-            userId: session.user.id,
-            userEmail: session.user.email,
+            userId: userId,
             fileId: fileId || 'MISSING',
             contentLength: content?.length || 0
         });
@@ -219,7 +216,7 @@ export async function PUT(request: NextRequest) {
         const projectId = fileMetadata.projectId.toString();
 
         // Check project access
-        const accessCheck = await checkProjectAccess(projectId, session.user.id);
+        const accessCheck = await checkProjectAccess(projectId, userId);
         
         if (!accessCheck.hasAccess) {
             return NextResponse.json(
@@ -248,7 +245,7 @@ export async function PUT(request: NextRequest) {
         if (fileMetadata.storageType === 's3' && fileMetadata.s3Key) {
             try {
                 const s3Result = await uploadFileToS3(
-                    session.user.id,
+                    userId,
                     projectId,
                     fileMetadata.name,
                     content
