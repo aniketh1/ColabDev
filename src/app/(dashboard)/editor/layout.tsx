@@ -3,8 +3,8 @@
 import EditorHeader from "./_component/EditorHeader";
 import EditorSidebar from "./_component/EditorSidebar";
 import FileOpen from "./_component/FileOpen";
+import ConnectionStatus from "./_component/ConnectionStatus";
 import { EditorProviderComp } from "./_provider/EditorProvider";
-import BrowerRunCode from "./_component/BrowerRunCode";
 
 export default function EditorLayout({
   children,
@@ -28,6 +28,17 @@ export default function EditorLayout({
 
           {/* COMPONENT 2: Code Editor Area */}
           <main className="flex-1 flex flex-col overflow-hidden bg-[#1e1e1e]">
+            {/* COMPONENT 3: Tab Bar - shows open file & connection status */}
+            <div className="h-10 bg-[#252526] border-b border-[#2d2d2d] flex items-center justify-between px-2">
+              {/* Left: File Tab */}
+              <div className="flex-1">
+                <FileOpen />
+              </div>
+              
+              {/* Right: Internet Speed Indicator */}
+              <ConnectionStatus />
+            </div>
+
             {/* Editor content - takes full remaining space */}
             <div className="flex-1 overflow-auto bg-[#1e1e1e]">
               {children}
