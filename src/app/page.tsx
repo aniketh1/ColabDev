@@ -4,19 +4,32 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useRouter } from "next/navigation";
 import { TypeAnimation } from "react-type-animation";
-import { Code2, Users, Zap, Cloud, MessageSquare, Shield, Rocket, BookOpen, Github, Linkedin, Twitter } from "lucide-react";
+import { Code2, Users, Zap, Cloud, MessageSquare, Shield, Rocket, BookOpen } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Moon, Sun } from "lucide-react";
 import LiquidEther from "@/components/LiquidEther";
 import { useEffect, useState } from "react";
+import { useAuth } from "@clerk/nextjs";
+import UserAvatar from "@/components/UserAvatar";
 
 export default function Home() {
   const router = useRouter()
   const { theme, setTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
+  const { isSignedIn } = useAuth()
+  const [stats, setStats] = useState({ usersCount: 0, projectsCount: 0, activeProjectsCount: 0 })
 
   useEffect(() => {
     setMounted(true)
+    // Fetch real stats
+    fetch('/api/stats')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          setStats(data.data)
+        }
+      })
+      .catch(err => console.error('Failed to fetch stats:', err))
   }, [])
 
   // Logo colors for light and dark mode
@@ -89,20 +102,12 @@ export default function Home() {
       { name: "Home", href: "/" },
       { name: "Features", href: "#features" },
       { name: "Dashboard", href: "/dashboard" },
-      { name: "Roadmap", href: "#" }
+      { name: "Explore", href: "/explore" }
     ],
     company: [
-      { name: "About Us", href: "#" },
-      { name: "Contact", href: "#" },
-      { name: "Careers", href: "#" },
-      { name: "Blog", href: "#" }
+      { name: "About Us", href: "/about" }
     ],
-    support: [
-      { name: "Help Center", href: "#" },
-      { name: "Documentation", href: "#" },
-      { name: "Community", href: "#" },
-      { name: "Status Page", href: "#" }
-    ]
+    support: []
   }
 
   return (
@@ -133,7 +138,7 @@ export default function Home() {
       {/* Content Wrapper */}
       <div className="relative z-10">
         {/* Header */}
-        <header className="sticky top-0 z-50 bg-white/80 dark:bg-black/80 backdrop-blur-md border-b border-border">
+        <header className="bg-white/80 dark:bg-black/80 backdrop-blur-md border-b border-border">
         <div className="container px-4 mx-auto flex items-center justify-between h-20">
           <Logo />
           <nav className="hidden md:flex items-center gap-6">
@@ -154,8 +159,14 @@ export default function Home() {
               <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
               <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
             </Button>
-            <Button onClick={() => router.push("/sign-in")} variant="outline" className="cursor-pointer">Login</Button>
-            <Button onClick={() => router.push("/sign-up")} className="cursor-pointer hidden sm:inline-flex">Get Started</Button>
+            {isSignedIn ? (
+              <UserAvatar />
+            ) : (
+              <>
+                <Button onClick={() => router.push("/sign-in")} variant="outline" className="cursor-pointer">Login</Button>
+                <Button onClick={() => router.push("/sign-up")} className="cursor-pointer hidden sm:inline-flex">Get Started</Button>
+              </>
+            )}
           </div>
         </div>
       </header>
@@ -165,7 +176,7 @@ export default function Home() {
         <div className="text-center max-w-4xl mx-auto">
           <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 rounded-full px-4 py-2 mb-6">
             <Zap className="w-4 h-4 text-primary" />
-            <span className="text-sm font-medium text-primary">Code with CodeV</span>
+            <span className="text-sm font-medium text-primary">Code with ColabDev</span>
           </div>
           
           <h1 className="text-4xl lg:text-6xl font-bold mb-6">
@@ -299,16 +310,16 @@ export default function Home() {
               {/* Stats */}
               <div className="grid grid-cols-3 gap-4 pt-8">
                 <div className="text-center">
-                  <div className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">1000+</div>
+                  <div className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">{stats.projectsCount}+</div>
                   <div className="text-sm text-muted-foreground">Projects</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-3xl font-bold bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">500+</div>
-                  <div className="text-sm text-muted-foreground">Devs</div>
+                  <div className="text-3xl font-bold bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">{stats.usersCount}+</div>
+                  <div className="text-sm text-muted-foreground">Developers</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-cyan-700 bg-clip-text text-transparent">24/7</div>
-                  <div className="text-sm text-muted-foreground">Active</div>
+                  <div className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-cyan-700 bg-clip-text text-transparent">{stats.activeProjectsCount}</div>
+                  <div className="text-sm text-muted-foreground">Active Projects</div>
                 </div>
               </div>
             </div>
@@ -478,17 +489,6 @@ export default function Home() {
               <p className="text-sm text-slate-400 mb-4">
                 Real-time collaborative coding platform that makes team collaboration effortless. Build, share, and deploy together.
               </p>
-              <div className="flex items-center gap-3">
-                <a href="#" className="w-9 h-9 rounded-full bg-slate-800 hover:bg-primary/20 flex items-center justify-center transition-colors">
-                  <Github className="w-4 h-4" />
-                </a>
-                <a href="#" className="w-9 h-9 rounded-full bg-slate-800 hover:bg-primary/20 flex items-center justify-center transition-colors">
-                  <Twitter className="w-4 h-4" />
-                </a>
-                <a href="#" className="w-9 h-9 rounded-full bg-slate-800 hover:bg-primary/20 flex items-center justify-center transition-colors">
-                  <Linkedin className="w-4 h-4" />
-                </a>
-              </div>
             </div>
 
             {/* Product Links */}
@@ -509,18 +509,7 @@ export default function Home() {
             <div>
               <h3 className="font-semibold text-white mb-4">Company</h3>
               <ul className="space-y-2">
-                <li><a href="/about" className="text-sm text-slate-400 hover:text-primary transition-colors">About Us</a></li>
-                <li><a href="#" className="text-sm text-slate-400 hover:text-primary transition-colors">Contact</a></li>
-                <li><a href="#" className="text-sm text-slate-400 hover:text-primary transition-colors">Careers</a></li>
-                <li><a href="#" className="text-sm text-slate-400 hover:text-primary transition-colors">Blog</a></li>
-              </ul>
-            </div>
-
-            {/* Support Links */}
-            <div>
-              <h3 className="font-semibold text-white mb-4">Support</h3>
-              <ul className="space-y-2">
-                {quickLinks.support.map((link, index) => (
+                {quickLinks.company.map((link, index) => (
                   <li key={index}>
                     <a href={link.href} className="text-sm text-slate-400 hover:text-primary transition-colors">
                       {link.name}
@@ -532,15 +521,10 @@ export default function Home() {
           </div>
 
           {/* Bottom Bar */}
-          <div className="pt-8 border-t border-slate-800 flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="pt-8 border-t border-slate-800 flex flex-col md:flex-row items-center justify-center gap-4">
             <p className="text-sm text-slate-400">
               © 2025 ColabDev. All rights reserved.
             </p>
-            <div className="flex items-center gap-6">
-              <a href="#" className="text-sm text-slate-400 hover:text-primary transition-colors">Privacy Policy</a>
-              <a href="#" className="text-sm text-slate-400 hover:text-primary transition-colors">Terms of Service</a>
-              <a href="#" className="text-sm text-slate-400 hover:text-primary transition-colors">Cookie Policy</a>
-            </div>
           </div>
         </div>
       </footer>
