@@ -30,7 +30,8 @@ export default function ExplorePage() {
   const router = useRouter();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<"all" | "recent">("recent");
+  const [filter, setFilter] = useState<"recent" | "all">("recent");
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (isLoaded && !isSignedIn) {
@@ -47,13 +48,15 @@ export default function ExplorePage() {
 
   const fetchProjects = async () => {
     setLoading(true);
+    setError(null);
     try {
       const response = await Axios.get(`/api/explore?filter=${filter}&limit=20`);
       if (response.status === 200) {
         setProjects(response.data.data);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to fetch projects:", error);
+      setError(error.response?.data?.message || "Failed to load projects. Please try again later.");
     } finally {
       setLoading(false);
     }
@@ -147,7 +150,16 @@ export default function ExplorePage() {
         </div>
 
         {/* Projects Grid */}
-        {loading ? (
+        {error ? (
+          <div className="text-center py-16">
+            <div className="mx-auto mb-4 w-16 h-16 rounded-full bg-red-100 flex items-center justify-center">
+              <span className="text-3xl">⚠️</span>
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Error Loading Projects</h3>
+            <p className="text-gray-600 mb-6">{error}</p>
+            <Button onClick={fetchProjects}>Try Again</Button>
+          </div>
+        ) : loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[1, 2, 3, 4, 5, 6].map((i) => (
               <Card key={i} className="h-48">
