@@ -98,18 +98,18 @@ const EditorSidebar = () => {
   return (
     <div className="h-full w-full flex flex-col bg-[#252526] text-white">
       {/* Header */}
-      <div className="flex-shrink-0 h-[36px] flex items-center justify-between px-3 border-b border-[#2d2d2d] bg-[#323233]">
-        <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.05em] font-bold text-[#cccccc]">
-          <FolderOpen className="h-3.5 w-3.5 text-[#007acc]" />
+      <div className="flex-shrink-0 h-[44px] flex items-center justify-between px-4 border-b border-[#2d2d2d] bg-[#252526]">
+        <div className="flex items-center gap-2.5 text-[12px] uppercase tracking-wider font-semibold text-[#cccccc]">
+          <FolderOpen className="h-4 w-4 text-[#007acc]" />
           <span>Explorer</span>
         </div>
         <Button
           size="icon"
           variant="ghost"
           onClick={() => setOpenAddFile(true)}
-          className="h-7 w-7 hover:bg-[#2a2d2e] text-[#cccccc] hover:text-[#007acc] transition-all duration-200 rounded-md"
+          className="h-8 w-8 hover:bg-[#2a2d2e] text-[#cccccc] hover:text-[#007acc] transition-all duration-200 rounded-md"
         >
-          <FilePlus className="h-3.5 w-3.5" />
+          <FilePlus className="h-4 w-4" />
         </Button>
       </div>
 
@@ -144,23 +144,23 @@ const EditorSidebar = () => {
             </Button>
           </div>
         ) : (
-          <div className="py-2">
+          <div className="py-3">
             {/* Section Header */}
-            <button className="w-full flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold text-[#cccccc] uppercase tracking-wide hover:bg-[#2a2d2e] transition-colors">
-              <ChevronRight className="h-3 w-3" />
+            <button className="w-full flex items-center gap-2 px-4 py-2 text-[11px] font-bold text-[#cccccc] uppercase tracking-wide hover:bg-[#2a2d2e] transition-colors rounded-md">
+              <ChevronRight className="h-3.5 w-3.5" />
               <span>Project Files</span>
-              <span className="ml-auto text-[#999999] text-[10px] font-normal">{fileList.length}</span>
+              <span className="ml-auto text-[#999999] text-[10px] font-normal bg-[#2a2d2e] px-2 py-0.5 rounded">{fileList.length}</span>
             </button>
             
             {/* File Items */}
-            <div className="px-2 mt-1 space-y-0.5">
+            <div className="px-3 mt-2 space-y-1">
               {fileList.map((file) => {
                 const isActive = activeFile === file.name;
                 return (
                   <button
                     key={file?._id}
                     className={`
-                      w-full flex items-center gap-2.5 px-2 py-1.5 text-left rounded-md
+                      w-full flex items-center gap-3 px-3 py-2 text-left rounded-md
                       transition-all duration-150 group
                       ${isActive
                         ? 'bg-[#007acc]/20 text-[#007acc] shadow-sm border border-[#007acc]/30'
@@ -172,18 +172,18 @@ const EditorSidebar = () => {
                       router.push(`/editor/${projectId}?file=${encodeURIComponent(file.name)}`);
                     }}
                   >
-                    <div className="w-4 h-4 flex-shrink-0 flex items-center justify-center">
+                    <div className="w-5 h-5 flex-shrink-0 flex items-center justify-center">
                       <Image
                         alt={file.name}
-                        width={16}
-                        height={16}
+                        width={18}
+                        height={18}
                         src={getFileIcon(file.extension) || ""}
                         className="object-contain opacity-90 group-hover:opacity-100"
                       />
                     </div>
                     <span className="text-[13px] truncate flex-1 font-medium">{file.name}</span>
                     {isActive && (
-                      <div className="w-1.5 h-1.5 rounded-full bg-[#007acc] shadow-[0_0_6px_rgba(0,122,204,0.6)]" />
+                      <div className="w-2 h-2 rounded-full bg-[#007acc] shadow-[0_0_8px_rgba(0,122,204,0.8)]" />
                     )}
                   </button>
                 );

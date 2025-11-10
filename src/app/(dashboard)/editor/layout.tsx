@@ -29,18 +29,8 @@ export default function EditorLayout({
         {/* Main Content Area */}
         <div className="flex-1 flex overflow-hidden">
           <BrowerRunCode>
-            {/* Activity Bar - Ultra thin left strip (48px) - hidden on mobile */}
-            <div className="hidden md:flex w-[48px] bg-[#333333] border-r border-[#2d2d2d] flex-col items-center py-2 gap-3 flex-shrink-0">
-              <div className="w-12 h-12 flex items-center justify-center cursor-pointer hover:bg-[#2a2d2e] transition-colors relative group">
-                <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M19.5 3h-15A1.5 1.5 0 003 4.5v15A1.5 1.5 0 004.5 21h15a1.5 1.5 0 001.5-1.5v-15A1.5 1.5 0 0019.5 3zM6 6h3v3H6V6zm0 4.5h3v3H6v-3zM6 15h3v3H6v-3zm4.5-9h3v3h-3V6zm0 4.5h3v3h-3v-3zm0 4.5h3v3h-3v-3zm4.5-9h3v3h-3V6zm0 4.5h3v3h-3v-3zm0 4.5h3v3h-3v-3z"/>
-                </svg>
-                <div className="absolute left-0 w-0.5 h-8 bg-white opacity-0 group-hover:opacity-100 transition-opacity" />
-              </div>
-            </div>
-
-            {/* Sidebar - Fixed 20% on desktop, resizable on tablet, hidden on mobile */}
-            <div className="hidden lg:flex lg:w-[20%] border-r border-[#2d2d2d] bg-[#252526] flex-shrink-0">
+            {/* Sidebar - Wider and cleaner on desktop */}
+            <div className="hidden lg:flex lg:w-[280px] border-r border-[#2d2d2d] bg-[#252526] flex-shrink-0">
               <EditorSidebar />
             </div>
 
@@ -49,32 +39,32 @@ export default function EditorLayout({
               <ResizableSidebar className="border-r border-[#2d2d2d] bg-[#252526]" />
             </div>
 
-            {/* Main Editor Area - 80% on desktop, remaining space on tablet, 100% on mobile */}
+            {/* Main Editor Area - Takes remaining space */}
             <main className="flex-1 flex flex-col overflow-hidden bg-[#1e1e1e] min-w-0">
               {/* Tab Bar */}
-              <div className="flex-shrink-0 h-[35px] bg-[#252526] border-b border-[#2d2d2d]">
+              <div className="flex-shrink-0 h-[40px] bg-[#252526] border-b border-[#2d2d2d]">
                 <FileOpen />
               </div>
 
               {/* Editor Content */}
-              <div className="flex-1 overflow-auto bg-[#1e1e1e] custom-scrollbar">
+              <div className="flex-1 overflow-auto bg-[#1e1e1e] custom-scrollbar p-4">
                 {children}
               </div>
 
               {/* Status Bar */}
-              <div className="flex-shrink-0 h-[22px] bg-[#007acc] flex items-center justify-between px-3 text-white text-xs">
-                <div className="flex items-center gap-4">
-                  <span className="flex items-center gap-1">
-                    <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 16 16">
+              <div className="flex-shrink-0 h-[24px] bg-[#007acc] flex items-center justify-between px-4 text-white text-xs">
+                <div className="flex items-center gap-6">
+                  <span className="flex items-center gap-2">
+                    <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 16 16">
                       <path d="M8 1a7 7 0 100 14A7 7 0 008 1zm0 13A6 6 0 118 2a6 6 0 010 12z"/>
                       <path d="M8 4a.5.5 0 01.5.5v3h3a.5.5 0 010 1h-3.5a.5.5 0 01-.5-.5v-4A.5.5 0 018 4z"/>
                     </svg>
-                    main
+                    <span className="font-medium">main</span>
                   </span>
                   <span>UTF-8</span>
                   <span>LF</span>
                 </div>
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-6">
                   <span>Ln 1, Col 1</span>
                   <span>Spaces: 2</span>
                 </div>

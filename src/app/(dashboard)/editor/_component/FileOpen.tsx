@@ -14,8 +14,8 @@ const FileOpen = () => {
 
   if (!fileName) {
     return (
-      <div className="flex items-center h-full px-3 bg-[#161b22]">
-        <span className="text-[11px] text-[#6e7681] tracking-wide">No file open</span>
+      <div className="flex items-center h-full px-4 bg-[#252526]">
+        <span className="text-[12px] text-[#6e7681] tracking-wide font-medium">No file open</span>
       </div>
     );
   }
@@ -23,22 +23,22 @@ const FileOpen = () => {
   const extension = fileName.split('.').pop() || '';
 
   return (
-    <div className="flex items-center h-full bg-[#161b22] overflow-x-auto">
-      <div className="flex items-center gap-2 px-4 h-full bg-gradient-to-b from-[#0d1117] to-[#161b22] border-r border-[#21262d] min-w-fit group hover:bg-[#1f2428] transition-colors relative">
+    <div className="flex items-center h-full bg-[#252526] overflow-x-auto">
+      <div className="flex items-center gap-3 px-5 h-full bg-[#1e1e1e] border-r border-[#2d2d2d] min-w-fit group hover:bg-[#2a2d2e] transition-colors relative">
         {/* Active indicator line */}
-        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#1f6feb] via-[#58a6ff] to-[#1f6feb] shadow-[0_0_8px_rgba(31,111,235,0.6)]" />
+        <div className="absolute top-0 left-0 right-0 h-[2px] bg-[#007acc] shadow-[0_0_8px_rgba(0,122,204,0.6)]" />
         
-        <div className="w-4 h-4 flex-shrink-0">
+        <div className="w-5 h-5 flex-shrink-0">
           <Image
             alt={fileName}
-            width={16}
-            height={16}
+            width={18}
+            height={18}
             src={getFileIcon(extension) || ""}
             className="object-contain"
           />
         </div>
         
-        <p className="text-[13px] font-medium text-[#c9d1d9] max-w-[200px] truncate">
+        <p className="text-[14px] font-medium text-[#cccccc] max-w-[200px] truncate">
           {fileName}
         </p>
         
@@ -46,13 +46,13 @@ const FileOpen = () => {
           size="icon"
           variant="ghost"
           onClick={() => router.push(`/editor/${projectId}`)}
-          className="h-5 w-5 cursor-pointer hover:bg-[#30363d] rounded text-[#8b949e] hover:text-[#c9d1d9] transition-all ml-1 opacity-0 group-hover:opacity-100"
+          className="h-6 w-6 cursor-pointer hover:bg-[#3c3c3c] rounded text-[#999999] hover:text-[#cccccc] transition-all ml-2 opacity-0 group-hover:opacity-100"
         >
-          <X className="h-3.5 w-3.5" />
+          <X className="h-4 w-4" />
         </Button>
 
         {/* Modified indicator dot */}
-        <div className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full bg-[#58a6ff] opacity-0" />
+        <div className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full bg-[#007acc] opacity-0" />
       </div>
     </div>
   );
