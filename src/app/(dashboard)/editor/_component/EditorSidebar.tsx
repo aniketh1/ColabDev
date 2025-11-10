@@ -7,19 +7,11 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-} from "@/components/ui/sidebar";
 import Axios from "@/lib/Axios";
 import { getFileIcon } from "@/lib/getFileIcon";
 import { File, FilePlus } from "lucide-react";
 import Image from "next/image";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -98,8 +90,8 @@ const EditorSidebar = () => {
   }, []);
   
   return (
-    <Sidebar className="h-[calc(100vh-4rem)] max-h-[calc(100vh-4rem)] top-16 border-r border-border/50 backdrop-blur-sm bg-sidebar/95 lg:w-[20%] lg:min-w-[20%] lg:max-w-[20%] w-64">
-      <SidebarHeader className="bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border-b border-border/50 flex flex-row items-center py-3 px-4">
+    <div className="h-full w-full flex flex-col overflow-hidden">
+      <div className="bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border-b border-border/50 flex flex-row items-center py-3 px-4">
         <div className="flex items-center gap-2">
           <div className="h-5 w-1 bg-gradient-to-b from-primary to-primary/50 rounded-full" />
           <p className="font-semibold text-sm uppercase tracking-wide">Files</p>
@@ -137,8 +129,9 @@ const EditorSidebar = () => {
             </DialogContent>
           </Dialog>
         </div>
-      </SidebarHeader>
-      <SidebarContent className="py-2">
+      </div>
+      
+      <div className="flex-1 overflow-y-auto py-2">
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-8 gap-3">
             <div className="h-8 w-8 rounded-full border-2 border-primary/30 border-t-primary animate-spin" />
@@ -153,33 +146,32 @@ const EditorSidebar = () => {
             <p className="text-muted-foreground/70 text-xs text-center">Click the + button to create your first file</p>
           </div>
         ) : (
-          <SidebarMenu className="gap-1 px-2">
-            {fileList.map((file, index) => {
+          <div className="flex flex-col gap-1 px-2">
+            {fileList.map((file) => {
               return (
-                <SidebarMenuItem key={file?._id}>
-                  <SidebarMenuButton 
-                    className="cursor-pointer h-10 rounded-lg hover:bg-primary/10 transition-all duration-200 group relative overflow-hidden" 
-                    onClick={()=> router.push(`/editor/${projectId}?file=${encodeURIComponent(file.name)}`)}
-                  >
-                    <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary/0 to-primary/0 group-hover:from-primary/5 group-hover:via-primary/10 group-hover:to-primary/5 transition-all duration-300" />
-                    <div className="w-5 h-5 flex-shrink-0 relative z-10">
-                      <Image
-                        alt={file.name}
-                        width={20}
-                        height={20}
-                        src={getFileIcon(file.extension) || ""}
-                        className="object-contain"
-                      />
-                    </div>
-                    <p className="text-sm truncate relative z-10">{file.name}</p>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
+                <button
+                  key={file?._id}
+                  className="flex items-center gap-3 cursor-pointer h-10 px-3 rounded-lg hover:bg-primary/10 transition-all duration-200 group relative overflow-hidden w-full text-left" 
+                  onClick={()=> router.push(`/editor/${projectId}?file=${encodeURIComponent(file.name)}`)}
+                >
+                  <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary/0 to-primary/0 group-hover:from-primary/5 group-hover:via-primary/10 group-hover:to-primary/5 transition-all duration-300" />
+                  <div className="w-5 h-5 flex-shrink-0 relative z-10">
+                    <Image
+                      alt={file.name}
+                      width={20}
+                      height={20}
+                      src={getFileIcon(file.extension) || ""}
+                      className="object-contain"
+                    />
+                  </div>
+                  <p className="text-sm truncate relative z-10">{file.name}</p>
+                </button>
               );
             })}
-          </SidebarMenu>
+          </div>
         )}
-      </SidebarContent>
-    </Sidebar>
+      </div>
+    </div>
   );
 };
 
