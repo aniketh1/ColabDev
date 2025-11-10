@@ -442,29 +442,29 @@ const CodeEditor = () => {
   }, [projectAccess.canEdit]);
 
   return (
-    <div className="h-full w-full p-3">
+    <div className="h-full w-full">
       {isLoading ? (
-        <div className="h-full flex items-center justify-center flex-col bg-gradient-to-br from-card via-card to-muted/30 rounded-xl p-8 border border-border/50 backdrop-blur-sm">
-          <div className="h-12 w-12 rounded-full border-3 border-primary/30 border-t-primary animate-spin mb-4" />
-          <p className="text-sm text-muted-foreground">Loading file content...</p>
+        <div className="h-full flex items-center justify-center flex-col bg-[#1e1e1e]">
+          <div className="h-12 w-12 rounded-full border-3 border-[#007acc]/30 border-t-[#007acc] animate-spin mb-4" />
+          <p className="text-sm text-[#cccccc]">Loading file content...</p>
         </div>
       ) : !file ? (
-        <div className="h-full flex items-center justify-center flex-col bg-gradient-to-br from-card via-card to-muted/30 rounded-xl p-8 border border-border/50 backdrop-blur-sm">
+        <div className="h-full flex items-center justify-center flex-col bg-[#1e1e1e]">
           <div className="relative">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-primary/10 to-transparent rounded-full blur-3xl" />
+            <div className="absolute inset-0 bg-[#007acc]/10 rounded-full blur-3xl" />
             <Image
               src={"/editor file.svg"}
               width={280}
               height={280}
               alt="editor"
-              className="relative z-10"
+              className="relative z-10 opacity-70"
             />
           </div>
-          <p className="text-muted-foreground text-lg mt-4">No file is open</p>
-          <p className="text-muted-foreground/70 text-sm mt-2">Select a file from the sidebar to start editing</p>
+          <p className="text-[#cccccc] text-lg mt-4 font-medium">No file is open</p>
+          <p className="text-[#999999] text-sm mt-2">Select a file from the sidebar to start editing</p>
         </div>
       ) : (
-        <div className="relative h-full rounded-xl overflow-hidden border border-border/50 shadow-2xl bg-card">
+        <div className="relative h-full overflow-hidden bg-[#1e1e1e]">
           {/* Read-Only Banner */}
           {!projectAccess.canEdit && (
             <div className="absolute top-0 left-0 right-0 z-30 bg-gradient-to-r from-amber-500/20 to-orange-500/20 backdrop-blur-xl px-4 py-2 border-b border-amber-500/30">
@@ -515,7 +515,7 @@ const CodeEditor = () => {
           {/* Editor Container */}
           <div
             className={cn(
-              "relative h-full w-full overflow-auto bg-gradient-to-br from-background via-background to-muted/10",
+              "relative h-full w-full overflow-auto bg-[#1e1e1e]",
               !projectAccess.canEdit && "pt-12"
             )}
             ref={ref}

@@ -47,7 +47,7 @@ export default function EditorLayout({
               </div>
 
               {/* Editor Content */}
-              <div className="flex-1 overflow-auto bg-[#1e1e1e] custom-scrollbar p-4">
+              <div className="flex-1 overflow-auto bg-[#1e1e1e] custom-scrollbar">
                 {children}
               </div>
 
