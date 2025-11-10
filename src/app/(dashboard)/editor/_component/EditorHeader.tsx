@@ -142,7 +142,10 @@ const EditorHeader = () => {
         )}
         
         {/* Run Code Button */}
-        <RunCodeButton projectId={projectId as string} />
+        <RunCodeButton 
+          projectId={projectId as string} 
+          techStack={data?.techStack}
+        />
         
         <Button
           onClick={() => setOpenBrowser(!openBrowser)}

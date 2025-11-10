@@ -7,12 +7,20 @@ import { toast } from 'sonner';
 
 interface RunCodeButtonProps {
   projectId: string;
+  techStack?: string;
 }
 
-export function RunCodeButton({ projectId }: RunCodeButtonProps) {
+export function RunCodeButton({ projectId, techStack }: RunCodeButtonProps) {
   const [showPreview, setShowPreview] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [currentFiles, setCurrentFiles] = useState({ html: '', css: '', js: '' });
+
+  // Only show button for HTML/CSS/JS projects
+  const isHtmlProject = !techStack || techStack === 'html';
+  
+  if (!isHtmlProject) {
+    return null; // Hide button for non-HTML projects
+  }
 
   const fetchLatestFiles = async () => {
     try {

@@ -116,6 +116,7 @@ const CreateProject = ({ buttonVarient }: TCreateProject) => {
 
     try {
       setIsLoading(true);
+      toast.loading("Creating project...", { id: "create-project" });
       
       // Create project
       const response = await Axios.post("/api/project", {
@@ -129,18 +130,38 @@ const CreateProject = ({ buttonVarient }: TCreateProject) => {
         // Create initial files based on tech stack
         const selectedTech = techStacks.find(t => t.id === selectedStack);
         if (selectedTech) {
-          const filePromises = Object.entries(selectedTech.files).map(([fileName, content]) => 
-            Axios.post("/api/project-file", {
-              projectId,
-              fileName,
-              content,
-            }).catch(err => console.error(`Failed to create ${fileName}:`, err))
+          toast.loading(`Creating ${Object.keys(selectedTech.files).length} files...`, { id: "create-project" });
+          
+          const fileResults = await Promise.allSettled(
+            Object.entries(selectedTech.files).map(([fileName, content]) => 
+              Axios.post("/api/project-file", {
+                projectId,
+                fileName,
+                content,
+              }).then(() => {
+                console.log(`✅ Created file: ${fileName}`);
+                return { fileName, success: true };
+              }).catch(err => {
+                console.error(`❌ Failed to create ${fileName}:`, err);
+                return { fileName, success: false, error: err };
+              })
+            )
           );
           
-          await Promise.all(filePromises);
+          const failedFiles = fileResults.filter(r => r.status === 'rejected' || (r.status === 'fulfilled' && !r.value.success));
+          
+          if (failedFiles.length > 0) {
+            console.warn('⚠️ Some files failed to create:', failedFiles);
+            toast.warning(`Project created, but ${failedFiles.length} file(s) failed to create`, { id: "create-project" });
+          } else {
+            console.log('✅ All files created successfully');
+          }
         }
         
-        toast.success(`${selectedStack.toUpperCase()} project created successfully!`);
+        toast.success(`${selectedStack.toUpperCase()} project created successfully!`, { id: "create-project" });
+        
+        // Small delay to ensure S3 writes are complete
+        await new Promise(resolve => setTimeout(resolve, 500));
         
         // Navigate to editor with appropriate first file based on tech stack
         let firstFile = 'index.html';
@@ -156,8 +177,8 @@ const CreateProject = ({ buttonVarient }: TCreateProject) => {
         router.push(`/editor/${projectId}?file=${encodeURIComponent(firstFile)}`);
       }
     } catch (error: any) {
-      toast.error(error?.response?.data?.error || "Failed to create project");
-      console.log(error);
+      toast.error(error?.response?.data?.error || "Failed to create project", { id: "create-project" });
+      console.error('❌ Project creation error:', error);
     } finally {
       setIsLoading(false);
     }
