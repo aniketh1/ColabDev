@@ -18,8 +18,8 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
-        // Apply to editor routes only to avoid breaking Clerk
-        source: '/(dashboard)/editor/:path*',
+        // Apply to editor routes - route groups like (dashboard) don't appear in URLs
+        source: '/editor/:path*',
         headers: [
           {
             key: 'Cross-Origin-Embedder-Policy',
