@@ -229,25 +229,25 @@ export default function Home() {
       </section>
 
       {/* Gen-Z Learning Section */}
-      <section id="learn" className="py-20 lg:py-32 bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 dark:from-purple-950/20 dark:via-pink-950/20 dark:to-blue-950/20 relative overflow-hidden">
+      <section id="learn" className="py-20 lg:py-32 bg-gradient-to-br from-blue-50 via-cyan-50 to-blue-50 dark:from-blue-950/20 dark:via-cyan-950/20 dark:to-blue-950/20 relative overflow-hidden">
         {/* Animated Background Elements */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-20 left-10 w-72 h-72 bg-purple-300 dark:bg-purple-600 rounded-full mix-blend-multiply dark:mix-blend-soft-light filter blur-xl opacity-30 animate-blob"></div>
-          <div className="absolute top-40 right-10 w-72 h-72 bg-pink-300 dark:bg-pink-600 rounded-full mix-blend-multiply dark:mix-blend-soft-light filter blur-xl opacity-30 animate-blob animation-delay-2000"></div>
-          <div className="absolute -bottom-8 left-1/2 w-72 h-72 bg-blue-300 dark:bg-blue-600 rounded-full mix-blend-multiply dark:mix-blend-soft-light filter blur-xl opacity-30 animate-blob animation-delay-4000"></div>
+          <div className="absolute top-20 left-10 w-72 h-72 bg-blue-300 dark:bg-blue-600 rounded-full mix-blend-multiply dark:mix-blend-soft-light filter blur-xl opacity-30 animate-blob"></div>
+          <div className="absolute top-40 right-10 w-72 h-72 bg-cyan-300 dark:bg-cyan-600 rounded-full mix-blend-multiply dark:mix-blend-soft-light filter blur-xl opacity-30 animate-blob animation-delay-2000"></div>
+          <div className="absolute -bottom-8 left-1/2 w-72 h-72 bg-blue-400 dark:bg-blue-700 rounded-full mix-blend-multiply dark:mix-blend-soft-light filter blur-xl opacity-30 animate-blob animation-delay-4000"></div>
         </div>
 
         <div className="container px-4 mx-auto relative z-10">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             {/* Left Content */}
             <div className="space-y-8">
-              <div className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-full px-4 py-2 text-sm font-semibold">
+              <div className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-full px-4 py-2 text-sm font-semibold">
                 <span className="animate-pulse">✨</span>
                 <span>NO CAP FR FR</span>
               </div>
               
               <h2 className="text-4xl lg:text-6xl font-black leading-tight">
-                <span className="bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent">
+                <span className="bg-gradient-to-r from-blue-600 via-cyan-600 to-blue-700 bg-clip-text text-transparent">
                   Learn By Doing,
                 </span>
                 <br />
@@ -280,7 +280,7 @@ export default function Home() {
                 <Button 
                   onClick={() => router.push("/explore")} 
                   size="lg" 
-                  className="cursor-pointer px-8 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold text-lg group"
+                  className="cursor-pointer px-8 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-bold text-lg group"
                 >
                   <span className="mr-2 group-hover:scale-110 transition-transform inline-block">🔍</span>
                   Start Exploring Projects
@@ -290,7 +290,7 @@ export default function Home() {
                   onClick={() => router.push("/sign-up")} 
                   variant="outline" 
                   size="lg" 
-                  className="cursor-pointer px-8 border-2 border-purple-600 text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-950 font-semibold"
+                  className="cursor-pointer px-8 border-2 border-blue-600 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950 font-semibold"
                 >
                   Join the Squad
                 </Button>
@@ -299,15 +299,15 @@ export default function Home() {
               {/* Stats */}
               <div className="grid grid-cols-3 gap-4 pt-8">
                 <div className="text-center">
-                  <div className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">1000+</div>
+                  <div className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">1000+</div>
                   <div className="text-sm text-muted-foreground">Projects</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-3xl font-bold bg-gradient-to-r from-pink-600 to-blue-600 bg-clip-text text-transparent">500+</div>
+                  <div className="text-3xl font-bold bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">500+</div>
                   <div className="text-sm text-muted-foreground">Devs</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">24/7</div>
+                  <div className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-cyan-700 bg-clip-text text-transparent">24/7</div>
                   <div className="text-sm text-muted-foreground">Active</div>
                 </div>
               </div>
@@ -326,26 +326,26 @@ export default function Home() {
                   </div>
                   
                   <div className="space-y-2 font-mono text-sm">
-                    <div className="text-purple-600 dark:text-purple-400">
+                    <div className="text-blue-600 dark:text-blue-400">
                       <span className="text-blue-600 dark:text-blue-400">const</span> learningMode = <span className="text-green-600 dark:text-green-400">&apos;activated&apos;</span>;
                     </div>
-                    <div className="text-purple-600 dark:text-purple-400">
+                    <div className="text-cyan-600 dark:text-cyan-400">
                       <span className="text-blue-600 dark:text-blue-400">const</span> vibeCheck = <span className="text-green-600 dark:text-green-400">&apos;immaculate&apos;</span>;
                     </div>
                     <div className="h-2"></div>
-                    <div className="text-pink-600 dark:text-pink-400">
+                    <div className="text-blue-700 dark:text-blue-400">
                       <span className="text-blue-600 dark:text-blue-400">function</span> <span className="text-yellow-600 dark:text-yellow-400">levelUp</span>() {"{"}
                     </div>
                     <div className="pl-4 text-muted-foreground">
-                      <span className="text-purple-600 dark:text-purple-400">explore</span>(<span className="text-green-600 dark:text-green-400">&apos;community-projects&apos;</span>);
+                      <span className="text-cyan-600 dark:text-cyan-400">explore</span>(<span className="text-green-600 dark:text-green-400">&apos;community-projects&apos;</span>);
                     </div>
                     <div className="pl-4 text-muted-foreground">
-                      <span className="text-purple-600 dark:text-purple-400">learn</span>(<span className="text-green-600 dark:text-green-400">&apos;real-code&apos;</span>);
+                      <span className="text-blue-600 dark:text-blue-400">learn</span>(<span className="text-green-600 dark:text-green-400">&apos;real-code&apos;</span>);
                     </div>
                     <div className="pl-4 text-muted-foreground">
-                      <span className="text-purple-600 dark:text-purple-400">build</span>(<span className="text-green-600 dark:text-green-400">&apos;amazing-stuff&apos;</span>);
+                      <span className="text-cyan-600 dark:text-cyan-400">build</span>(<span className="text-green-600 dark:text-green-400">&apos;amazing-stuff&apos;</span>);
                     </div>
-                    <div className="text-pink-600 dark:text-pink-400">{"}"}</div>
+                    <div className="text-blue-700 dark:text-blue-400">{"}"}</div>
                   </div>
 
                   {/* Animated Elements */}
@@ -355,12 +355,12 @@ export default function Home() {
                       <span className="text-xs text-green-600 dark:text-green-400 font-semibold">Real-time projects loading...</span>
                     </div>
                     <div className="flex items-center gap-3">
-                      <div className="w-2 h-2 rounded-full bg-purple-500 animate-ping"></div>
-                      <span className="text-xs text-purple-600 dark:text-purple-400 font-semibold">50+ devs coding right now!</span>
+                      <div className="w-2 h-2 rounded-full bg-blue-500 animate-ping"></div>
+                      <span className="text-xs text-blue-600 dark:text-blue-400 font-semibold">50+ devs coding right now!</span>
                     </div>
                     <div className="flex items-center gap-3">
-                      <div className="w-2 h-2 rounded-full bg-pink-500"></div>
-                      <span className="text-xs text-pink-600 dark:text-pink-400 font-semibold">New project just dropped! 🔥</span>
+                      <div className="w-2 h-2 rounded-full bg-cyan-500"></div>
+                      <span className="text-xs text-cyan-600 dark:text-cyan-400 font-semibold">New project just dropped! 🔥</span>
                     </div>
                   </div>
                 </div>
