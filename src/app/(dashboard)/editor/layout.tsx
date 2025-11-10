@@ -3,7 +3,13 @@ import EditorSidebar from "./_component/EditorSidebar";
 import FileOpen from "./_component/FileOpen";
 import { EditorProviderComp } from "./_provider/EditorProvider";
 import BrowerRunCode from "./_component/BrowerRunCode";
-import { Resizable } from "re-resizable";
+import dynamic from "next/dynamic";
+
+// Dynamically import ResizableSidebar to avoid SSR issues
+const ResizableSidebar = dynamic(() => import("@/components/ResizableSidebar"), {
+  ssr: false,
+  loading: () => <div className="w-[20%] border-r border-border/50 bg-sidebar/95 backdrop-blur-sm"><EditorSidebar /></div>
+});
 
 export default function EditorLayout({
   children,
@@ -26,30 +32,7 @@ export default function EditorLayout({
 
             {/* Resizable Sidebar for Tablet */}
             <div className="hidden md:flex lg:hidden">
-              <Resizable
-                defaultSize={{ width: '20%', height: '100%' }}
-                minWidth="15%"
-                maxWidth="50%"
-                enable={{
-                  right: true
-                }}
-                className="border-r border-border/50 bg-sidebar/95 backdrop-blur-sm"
-                handleStyles={{
-                  right: {
-                    width: '4px',
-                    right: '0',
-                    backgroundColor: 'hsl(var(--border))',
-                    cursor: 'ew-resize',
-                    opacity: 0.5,
-                    transition: 'opacity 0.2s',
-                  }
-                }}
-                handleClasses={{
-                  right: 'hover:opacity-100'
-                }}
-              >
-                <EditorSidebar />
-              </Resizable>
+              <ResizableSidebar className="border-r border-border/50 bg-sidebar/95 backdrop-blur-sm" />
             </div>
 
             {/* Main Editor Area - 80% on desktop, remaining space on tablet, 100% on mobile */}

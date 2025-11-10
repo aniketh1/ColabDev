@@ -5,8 +5,8 @@ import React, { useCallback, useEffect, useState, useRef } from "react";
 import { basicSetup, EditorView } from "codemirror";
 import { EditorState } from "@codemirror/state";
 import { html } from "@codemirror/lang-html";
-import { javascript, javascriptLanguage } from "@codemirror/lang-javascript";
-import { css, cssLanguage } from "@codemirror/lang-css";
+import { javascript } from "@codemirror/lang-javascript";
+import { css } from "@codemirror/lang-css";
 import { toast } from "sonner";
 import Axios from "@/lib/Axios";
 import { useEditorContext } from "../_provider/EditorProvider";
@@ -277,7 +277,7 @@ const CodeEditor = () => {
     ? useLiveblocksCollaborationReal
     : useLiveblocksCollaboration;
 
-  const { isConnected, broadcastChange } = collaborationHook(collaborationOptions);
+  const { isConnected, broadcastChange } = collaborationHook ? collaborationHook(collaborationOptions) : { isConnected: false, broadcastChange: () => {} };
 
   // Create stable refs for callback functions to prevent editor recreation
   const setCodeRef = useRef(setCode);
@@ -357,20 +357,7 @@ const CodeEditor = () => {
         ? javascript()
         : extension === "css"
           ? css()
-          : html({
-              autoCloseTags: true,
-              selfClosingTags: true,
-              nestedLanguages: [
-                {
-                  tag: "style",
-                  parser: cssLanguage.parser,
-                },
-                {
-                  tag: "script",
-                  parser: javascriptLanguage.parser,
-                },
-              ],
-            }),
+          : html(),
     ];
 
     // Add update listener - always add it, but save function checks permissions via ref
