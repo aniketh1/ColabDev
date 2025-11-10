@@ -19,9 +19,17 @@ export default function EditorLayout({
           <EditorHeader />
         </div>
         
-        {/* Main Content Area - Empty for now, will add step by step */}
-        <div className="flex-1 bg-[#1e1e1e]">
-          {/* We'll add components here one by one */}
+        {/* Main Content Area */}
+        <div className="flex-1 flex overflow-hidden">
+          {/* COMPONENT 1: Left Sidebar - File Explorer */}
+          <aside className="w-64 bg-[#252526] border-r border-[#2d2d2d] flex-shrink-0">
+            <EditorSidebar />
+          </aside>
+
+          {/* Rest of content will go here */}
+          <div className="flex-1 bg-[#1e1e1e]">
+            {/* Editor will be added next */}
+          </div>
         </div>
       </EditorProviderComp>
     </div>
