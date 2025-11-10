@@ -1,9 +1,10 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { useEditorContext } from "../_provider/EditorProvider";
-import { X, Play, RotateCw, AlertCircle } from "lucide-react";
+import { X, Play, RotateCw } from "lucide-react";
 import { useParams } from "next/navigation";
 import Axios from "@/lib/Axios";
+import { WebContainerPreview } from "@/components/WebContainerPreview";
 
 export default function PreviewPanel() {
   const { openBrowser, setOpenBrowser, mainFileContent, techStack } = useEditorContext();
@@ -12,7 +13,7 @@ export default function PreviewPanel() {
   const projectId = params?.projectId as string;
   const [allFiles, setAllFiles] = useState<Record<string, string>>({});
 
-  // Fetch all files for the project and set mainFileContent if it's empty
+  // Fetch all files for the project
   useEffect(() => {
     const fetchAllFiles = async () => {
       if (!projectId || !openBrowser) return;
@@ -30,11 +31,11 @@ export default function PreviewPanel() {
             }
           });
           
+          console.log('📁 Fetched files for preview:', Object.keys(filesData));
           setAllFiles(filesData);
           
-          // If mainFileContent is empty and we found index.html, set it
+          // For HTML projects: If mainFileContent is empty and we found index.html, render it
           if (!mainFileContent && indexHtmlContent && techStack === 'html') {
-            // We need to render the HTML content directly in the iframe
             if (iframeRef.current) {
               const iframe = iframeRef.current;
               const doc = iframe.contentDocument || iframe.contentWindow?.document;
@@ -120,18 +121,11 @@ export default function PreviewPanel() {
             title="Code Preview"
           />
         ) : (
-          <div className="flex items-center justify-center h-full bg-[#1e1e1e] text-[#cccccc]">
-            <div className="text-center p-8 max-w-md">
-              <AlertCircle className="w-16 h-16 mx-auto mb-4 text-[#007acc]" />
-              <h3 className="text-xl font-semibold mb-2">Preview Not Available</h3>
-              <p className="text-sm text-[#8b949e] mb-4">
-                Live preview for <span className="text-[#007acc] font-medium">{techStack.toUpperCase()}</span> projects requires a bundler.
-              </p>
-              <p className="text-xs text-[#8b949e]">
-                You can still edit your code. To see the preview, deploy your project or run it locally.
-              </p>
-            </div>
-          </div>
+          <WebContainerPreview 
+            projectId={projectId} 
+            techStack={techStack as 'react' | 'vue' | 'node' | 'html'} 
+            files={allFiles} 
+          />
         )}
       </div>
     </div>
