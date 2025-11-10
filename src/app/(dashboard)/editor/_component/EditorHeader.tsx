@@ -16,7 +16,6 @@ import UpdateProject from "./UpdateProject";
 import { ShareProject } from "./ShareProject";
 import { useEditorContext } from "../_provider/EditorProvider";
 import { cn } from "@/lib/utils";
-import { RunCodeButton } from "@/components/RunCodeButton";
 import { ProjectTemplateSelector } from "@/components/ProjectTemplateSelector";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
@@ -140,12 +139,6 @@ const EditorHeader = () => {
             onCollaboratorAdded={fetchData}
           />
         )}
-        
-        {/* Run Code Button */}
-        <RunCodeButton 
-          projectId={projectId as string} 
-          techStack={data?.techStack}
-        />
         
         <Button
           onClick={() => setOpenBrowser(!openBrowser)}
