@@ -9,7 +9,7 @@ import {
 import { Input } from "@/components/ui/input";
 import Axios from "@/lib/Axios";
 import { getFileIcon } from "@/lib/getFileIcon";
-import { File, FilePlus, FolderOpen } from "lucide-react";
+import { File, FilePlus, FolderOpen, ChevronRight } from "lucide-react";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
@@ -89,7 +89,6 @@ const EditorSidebar = () => {
   }, []);
 
   useEffect(() => {
-    // Get active file from URL
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
       setActiveFile(params.get('file') || "");
@@ -97,93 +96,110 @@ const EditorSidebar = () => {
   }, []);
   
   return (
-    <div className="h-full w-full flex flex-col bg-[#1e1e1e] text-[#cccccc]">
+    <div className="h-full w-full flex flex-col bg-[#0d1117] text-[#c9d1d9]">
       {/* Header */}
-      <div className="flex-shrink-0 h-[35px] flex items-center justify-between px-3 border-b border-[#2d2d2d] bg-[#252526]">
-        <div className="flex items-center gap-2 text-[11px] uppercase tracking-wider font-semibold text-[#cccccc]">
-          <FolderOpen className="h-3.5 w-3.5" />
+      <div className="flex-shrink-0 h-[36px] flex items-center justify-between px-3 border-b border-[#21262d] bg-gradient-to-r from-[#0d1117] to-[#161b22]">
+        <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.05em] font-bold text-[#8b949e]">
+          <FolderOpen className="h-3.5 w-3.5 text-[#58a6ff]" />
           <span>Explorer</span>
         </div>
         <Button
           size="icon"
           variant="ghost"
           onClick={() => setOpenAddFile(true)}
-          className="h-6 w-6 hover:bg-[#2a2d2e] text-[#cccccc] hover:text-white"
+          className="h-7 w-7 hover:bg-[#1f6feb]/10 text-[#8b949e] hover:text-[#58a6ff] transition-all duration-200 rounded-md"
         >
           <FilePlus className="h-3.5 w-3.5" />
         </Button>
       </div>
 
       {/* File List */}
-      <div className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden premium-scrollbar">
         {isLoading ? (
-          <div className="flex flex-col items-center justify-center py-12 gap-3">
-            <div className="h-6 w-6 rounded-full border-2 border-[#007acc]/30 border-t-[#007acc] animate-spin" />
-            <p className="text-[#858585] text-xs">Loading files...</p>
+          <div className="flex flex-col items-center justify-center py-16 gap-3">
+            <div className="relative">
+              <div className="h-8 w-8 rounded-full border-2 border-[#1f6feb]/20 border-t-[#1f6feb] animate-spin" />
+              <div className="absolute inset-0 h-8 w-8 rounded-full border-2 border-[#1f6feb]/10 animate-ping" />
+            </div>
+            <p className="text-[#8b949e] text-xs font-medium">Loading files...</p>
           </div>
         ) : fileList.length < 1 ? (
-          <div className="flex flex-col items-center justify-center py-16 gap-3 px-4">
-            <File className="h-12 w-12 text-[#505050]" />
-            <p className="text-[#858585] text-xs text-center">No files in workspace</p>
+          <div className="flex flex-col items-center justify-center py-20 gap-4 px-4">
+            <div className="relative">
+              <div className="absolute inset-0 bg-[#1f6feb]/5 blur-2xl rounded-full" />
+              <File className="h-14 w-14 text-[#30363d] relative" />
+            </div>
+            <div className="text-center">
+              <p className="text-[#8b949e] text-sm font-medium mb-1">No files in workspace</p>
+              <p className="text-[#6e7681] text-xs">Start by creating your first file</p>
+            </div>
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setOpenAddFile(true)}
-              className="mt-2 text-[#007acc] hover:text-[#4daafc] hover:bg-[#2a2d2e] text-xs h-7"
+              className="mt-2 text-[#58a6ff] hover:text-[#79c0ff] hover:bg-[#1f6feb]/10 text-xs h-8 px-4 rounded-md font-semibold"
             >
-              Create a file
+              <FilePlus className="h-3.5 w-3.5 mr-2" />
+              New File
             </Button>
           </div>
         ) : (
-          <div className="py-1">
-            {/* Project Section Header */}
-            <div className="px-3 py-1.5 text-[11px] font-semibold text-[#cccccc] uppercase tracking-wide">
-              Files
-            </div>
+          <div className="py-2">
+            {/* Section Header */}
+            <button className="w-full flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold text-[#8b949e] uppercase tracking-wide hover:bg-[#161b22] transition-colors">
+              <ChevronRight className="h-3 w-3" />
+              <span>Project Files</span>
+              <span className="ml-auto text-[#6e7681] text-[10px] font-normal">{fileList.length}</span>
+            </button>
             
             {/* File Items */}
-            {fileList.map((file) => {
-              const isActive = activeFile === file.name;
-              return (
-                <button
-                  key={file?._id}
-                  className={`
-                    w-full flex items-center gap-2 px-3 py-1 text-left
-                    transition-colors duration-100
-                    ${isActive 
-                      ? 'bg-[#37373d] text-white' 
-                      : 'text-[#cccccc] hover:bg-[#2a2d2e]'
-                    }
-                  `}
-                  onClick={() => {
-                    setActiveFile(file.name);
-                    router.push(`/editor/${projectId}?file=${encodeURIComponent(file.name)}`);
-                  }}
-                >
-                  <div className="w-4 h-4 flex-shrink-0 flex items-center justify-center">
-                    <Image
-                      alt={file.name}
-                      width={16}
-                      height={16}
-                      src={getFileIcon(file.extension) || ""}
-                      className="object-contain"
-                    />
-                  </div>
-                  <span className="text-[13px] truncate flex-1">{file.name}</span>
-                </button>
-              );
-            })}
+            <div className="px-2 mt-1 space-y-0.5">
+              {fileList.map((file) => {
+                const isActive = activeFile === file.name;
+                return (
+                  <button
+                    key={file?._id}
+                    className={`
+                      w-full flex items-center gap-2.5 px-2 py-1.5 text-left rounded-md
+                      transition-all duration-150 group
+                      ${isActive 
+                        ? 'bg-gradient-to-r from-[#1f6feb]/20 to-[#1f6feb]/10 text-[#58a6ff] shadow-sm border border-[#1f6feb]/30' 
+                        : 'text-[#c9d1d9] hover:bg-[#161b22] hover:text-[#58a6ff]'
+                      }
+                    `}
+                    onClick={() => {
+                      setActiveFile(file.name);
+                      router.push(`/editor/${projectId}?file=${encodeURIComponent(file.name)}`);
+                    }}
+                  >
+                    <div className="w-4 h-4 flex-shrink-0 flex items-center justify-center">
+                      <Image
+                        alt={file.name}
+                        width={16}
+                        height={16}
+                        src={getFileIcon(file.extension) || ""}
+                        className="object-contain opacity-90 group-hover:opacity-100"
+                      />
+                    </div>
+                    <span className="text-[13px] truncate flex-1 font-medium">{file.name}</span>
+                    {isActive && (
+                      <div className="w-1.5 h-1.5 rounded-full bg-[#58a6ff] shadow-[0_0_6px_rgba(88,166,255,0.6)]" />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         )}
       </div>
 
       {/* Add File Dialog */}
       <Dialog open={openAddFile} onOpenChange={setOpenAddFile}>
-        <DialogContent className="bg-[#252526] border-[#3c3c3c] text-[#cccccc]">
-          <DialogTitle className="text-[#cccccc] text-sm font-semibold">
+        <DialogContent className="bg-[#161b22] border-[#30363d] text-[#c9d1d9] shadow-2xl">
+          <DialogTitle className="text-[#c9d1d9] text-base font-bold">
             Create New File
           </DialogTitle>
-          <div className="space-y-4">
+          <div className="space-y-5 mt-2">
             <Input
               disabled={isLoading}
               value={fileName ?? ""}
@@ -194,26 +210,26 @@ const EditorSidebar = () => {
                   handleCreateFile();
                 }
               }}
-              className="bg-[#3c3c3c] border-[#3c3c3c] text-[#cccccc] placeholder:text-[#858585] focus:border-[#007acc] text-sm h-9"
+              className="bg-[#0d1117] border-[#30363d] text-[#c9d1d9] placeholder:text-[#6e7681] focus:border-[#1f6feb] focus:ring-1 focus:ring-[#1f6feb] text-sm h-10 rounded-md"
               autoFocus
             />
-            <div className="flex gap-2 justify-end">
+            <div className="flex gap-3 justify-end pt-2">
               <Button 
                 variant="ghost"
                 onClick={() => {
                   setOpenAddFile(false);
                   setFileName("");
                 }}
-                className="bg-[#3c3c3c] hover:bg-[#505050] text-[#cccccc] text-xs h-8"
+                className="bg-[#21262d] hover:bg-[#30363d] text-[#c9d1d9] text-sm h-9 px-5 rounded-md font-medium"
               >
                 Cancel
               </Button>
               <Button 
                 disabled={isLoading || !fileName} 
                 onClick={handleCreateFile}
-                className="bg-[#0e639c] hover:bg-[#1177bb] text-white text-xs h-8"
+                className="bg-[#238636] hover:bg-[#2ea043] text-white text-sm h-9 px-5 rounded-md font-semibold shadow-lg shadow-[#238636]/20 disabled:opacity-50"
               >
-                {isLoading ? "Creating..." : "Create"}
+                {isLoading ? "Creating..." : "Create File"}
               </Button>
             </div>
           </div>
@@ -221,18 +237,20 @@ const EditorSidebar = () => {
       </Dialog>
 
       <style jsx global>{`
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 10px;
+        .premium-scrollbar::-webkit-scrollbar {
+          width: 12px;
         }
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: #1e1e1e;
+        .premium-scrollbar::-webkit-scrollbar-track {
+          background: #0d1117;
+          border-left: 1px solid #21262d;
         }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: #424242;
-          border-radius: 0;
+        .premium-scrollbar::-webkit-scrollbar-thumb {
+          background: #30363d;
+          border-radius: 6px;
+          border: 3px solid #0d1117;
         }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: #4e4e4e;
+        .premium-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: #484f58;
         }
       `}</style>
     </div>

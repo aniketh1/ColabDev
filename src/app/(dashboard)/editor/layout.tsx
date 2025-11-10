@@ -69,6 +69,27 @@ export default function EditorLayout({
           </BrowerRunCode>
         </div>
       </EditorProviderComp>
+
+      <style jsx global>{`
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 14px;
+          height: 14px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: #1e1e1e;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: #424242;
+          border: 3px solid #1e1e1e;
+          border-radius: 7px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: #4e4e4e;
+        }
+        .custom-scrollbar::-webkit-scrollbar-corner {
+          background: #1e1e1e;
+        }
+      `}</style>
     </div>
   );
 }
