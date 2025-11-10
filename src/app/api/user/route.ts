@@ -1,15 +1,14 @@
-import { NextResponse,NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 import { connectDB } from "@/config/connectDB";
-import { getServerSession } from "next-auth";
+import { auth } from "@clerk/nextjs/server";
 import UserModel from "@/models/User";
-import { authOptions } from "@/lib/authOptions";
+import { getCurrentUserId } from "@/lib/clerk";
 
 export async function GET(){
     try{
-        const session:any = await  getServerSession(authOptions)
+        const { userId: clerkUserId } = await auth();
 
-        console.log("session",session)
-        if(!session){
+        if (!clerkUserId) {
             return NextResponse.json(
                 { error : "Unauthorized"},
                 { status  : 401 }
@@ -18,7 +17,12 @@ export async function GET(){
 
         await connectDB()
 
-        const user = await UserModel.findById(session?.user?.id)
+        const userId = await getCurrentUserId();
+        if (!userId) {
+            return NextResponse.json({ error: "User not found in database" }, { status: 404 });
+        }
+
+        const user = await UserModel.findById(userId)
 
     
         return NextResponse.json(

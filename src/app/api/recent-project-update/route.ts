@@ -1,21 +1,26 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { connectDB } from "@/config/connectDB";
 import ProjectModel from "@/models/ProjectModel";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/authOptions";
+import { auth } from "@clerk/nextjs/server";
+import { getCurrentUserId } from "@/lib/clerk";
 
 export async function GET() {
   try {
-    const session = await getServerSession(authOptions);
+    const { userId: clerkUserId } = await auth();
 
-    if (!session) {
+    if (!clerkUserId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     await connectDB();
 
+    const userId = await getCurrentUserId();
+    if (!userId) {
+      return NextResponse.json({ error: "User not found in database" }, { status: 404 });
+    }
+
     const recentProject = await ProjectModel.find({
-      userId: session.user.id,
+      userId: userId,
     })
       .sort({ updatedAt: -1 })
       .limit(10);

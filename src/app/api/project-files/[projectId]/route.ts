@@ -2,8 +2,8 @@ import { NextResponse, NextRequest } from "next/server";
 import { connectDB } from "@/config/connectDB";
 import FileModel from "@/models/FileModel";
 import ProjectModel from "@/models/ProjectModel";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/authOptions";
+import { auth } from "@clerk/nextjs/server";
+import { getCurrentUserId } from "@/lib/clerk";
 import { getFileFromS3 } from "@/lib/s3Operations";
 
 /**
@@ -15,14 +15,19 @@ export async function GET(
   { params }: { params: Promise<{ projectId: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) {
+    const { userId: clerkUserId } = await auth();
+    if (!clerkUserId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { projectId } = await params;
-
     await connectDB();
+
+    const userId = await getCurrentUserId();
+    if (!userId) {
+      return NextResponse.json({ error: "User not found in database" }, { status: 404 });
+    }
+
+    const { projectId } = await params;
 
     // Get project details
     const project = await ProjectModel.findById(projectId);
@@ -31,7 +36,7 @@ export async function GET(
     }
 
     // Check if user owns the project
-    if (project.userId.toString() !== session.user.id) {
+    if (project.userId.toString() !== userId) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
@@ -46,7 +51,7 @@ export async function GET(
         // If file is in S3, fetch from S3
         if (file.storageType === 's3' && file.s3Key) {
           const s3Result = await getFileFromS3(
-            session.user.id,
+            userId,
             projectId,
             file.name
           );
