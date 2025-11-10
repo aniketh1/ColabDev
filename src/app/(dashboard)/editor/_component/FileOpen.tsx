@@ -11,16 +11,16 @@ const FileOpen = () => {
   const { projectId } = useParams();
 
   return (
-    <div className="flex items-center gap-2 bg-gradient-to-r from-muted/80 via-muted/60 to-transparent border-b border-border/50 h-12 backdrop-blur-xl sticky top-0 z-40 px-3">
+    <div className="flex items-center gap-0 bg-sidebar/40 border-b border-border/50 h-10 backdrop-blur-sm">
       {fileName && (
-        <div className="flex items-center gap-2 bg-card/80 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-border/50 shadow-sm hover:shadow-md transition-all duration-200 group">
-          <FileCode className="h-4 w-4 text-primary" />
-          <p className="max-w-xs text-sm font-medium truncate">{fileName}</p>
+        <div className="flex items-center gap-2 px-4 h-full bg-background/50 border-r border-border/50 hover:bg-background/80 transition-colors">
+          <FileCode className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+          <p className="text-sm font-medium text-foreground">{fileName}</p>
           <Button
             size="icon"
             variant="ghost"
             onClick={() => router.push(`/editor/${projectId}`)}
-            className="h-6 w-6 cursor-pointer hover:bg-destructive/10 hover:text-destructive rounded-md transition-all duration-200 ml-1"
+            className="h-5 w-5 cursor-pointer hover:bg-muted rounded-sm transition-all ml-2"
           >
             <X className="h-3.5 w-3.5" />
           </Button>
