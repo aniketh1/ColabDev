@@ -25,11 +25,6 @@ const EditorHeader = () => {
   const { projectId } = useParams();
   const [isLoading, setIsLoading] = useState(true);
   const [data, setData] = useState<any>(null);
-  const [projectFiles, setProjectFiles] = useState({
-    html: "",
-    css: "",
-    js: "",
-  });
   const {
     isLoading: editorUpdateLoading,
     setOpenBrowser,
@@ -75,28 +70,9 @@ const EditorHeader = () => {
     }
   };
 
-  const fetchProjectFiles = async () => {
-    try {
-      const [htmlRes, cssRes, jsRes] = await Promise.all([
-        Axios.post("/api/code", { projectId, fileName: "index.html" }).catch(() => ({ data: { data: { content: "" } } })),
-        Axios.post("/api/code", { projectId, fileName: "style.css" }).catch(() => ({ data: { data: { content: "" } } })),
-        Axios.post("/api/code", { projectId, fileName: "script.js" }).catch(() => ({ data: { data: { content: "" } } })),
-      ]);
-
-      setProjectFiles({
-        html: htmlRes.data?.data?.content || "",
-        css: cssRes.data?.data?.content || "",
-        js: jsRes.data?.data?.content || "",
-      });
-    } catch (error) {
-      console.error("Failed to fetch project files:", error);
-    }
-  };
-
   useEffect(() => {
     if (projectId) {
       fetchData();
-      fetchProjectFiles();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId]);
@@ -166,12 +142,7 @@ const EditorHeader = () => {
         )}
         
         {/* Run Code Button */}
-        <RunCodeButton
-          html={projectFiles.html}
-          css={projectFiles.css}
-          js={projectFiles.js}
-          projectId={projectId as string}
-        />
+        <RunCodeButton projectId={projectId as string} />
         
         <Button
           onClick={() => setOpenBrowser(!openBrowser)}
