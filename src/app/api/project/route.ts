@@ -191,7 +191,8 @@ export async function PUT(request : NextRequest){
         await connectDB()
 
         await ProjectModel.findByIdAndUpdate(projectId, {
-            name : name
+            name : name,
+            lastActiveAt : new Date()
         })
 
         return NextResponse.json(

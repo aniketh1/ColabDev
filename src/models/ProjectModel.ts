@@ -7,6 +7,7 @@ export interface IProject {
     techStack? : string,
     collaborators? : mongoose.Types.ObjectId[],
     isPublic? : boolean,
+    lastActiveAt? : Date,
     createdAt? : Date
     updatedAt? : Date
 }
@@ -33,6 +34,10 @@ const projectSchema = new mongoose.Schema<IProject>({
     isPublic : {
         type : Boolean,
         default : true
+    },
+    lastActiveAt : {
+        type : Date,
+        default : Date.now
     }
 },{
     timestamps : true

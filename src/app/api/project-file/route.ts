@@ -118,6 +118,11 @@ export async function POST(request : NextRequest){
             });
         }
 
+        // Update project's lastActiveAt
+        await ProjectModel.findByIdAndUpdate(projectId, {
+            lastActiveAt: new Date()
+        });
+
         return NextResponse.json(
             { message : "File created successfully"},
             { status : 201 }

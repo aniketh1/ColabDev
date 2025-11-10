@@ -27,6 +27,16 @@ const DashboardHeader = () => {
       </div>
 
       <div className='ml-auto flex items-center gap-3'>
+        {/* Explore Button */}
+        <Button
+          variant="outline"
+          onClick={() => window.location.href = '/explore'}
+          className='hidden md:flex items-center gap-2'
+        >
+          <span>🔍</span>
+          <span>Explore</span>
+        </Button>
+
         {/* Theme Toggle Button */}
         <Button
           variant="outline"
