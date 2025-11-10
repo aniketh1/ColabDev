@@ -26,10 +26,13 @@ export default function EditorLayout({
             <EditorSidebar />
           </aside>
 
-          {/* Rest of content will go here */}
-          <div className="flex-1 bg-[#1e1e1e]">
-            {/* Editor will be added next */}
-          </div>
+          {/* COMPONENT 2: Code Editor Area */}
+          <main className="flex-1 flex flex-col overflow-hidden bg-[#1e1e1e]">
+            {/* Editor content - takes full remaining space */}
+            <div className="flex-1 overflow-auto bg-[#1e1e1e]">
+              {children}
+            </div>
+          </main>
         </div>
       </EditorProviderComp>
     </div>
