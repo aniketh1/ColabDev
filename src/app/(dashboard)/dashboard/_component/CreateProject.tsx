@@ -27,7 +27,6 @@ const techStacks = [
     name: 'HTML/CSS/JS',
     description: 'Static website with HTML, CSS, and JavaScript',
     icon: '🌐',
-    color: 'bg-orange-50 border-orange-200 hover:border-orange-400',
     files: {
       'index.html': '<!DOCTYPE html>\n<html lang="en">\n<head>\n  <meta charset="UTF-8">\n  <meta name="viewport" content="width=device-width, initial-scale=1.0">\n  <title>My Project</title>\n  <link rel="stylesheet" href="style.css">\n</head>\n<body>\n  <h1>Hello World!</h1>\n  <script src="script.js"></script>\n</body>\n</html>',
       'style.css': 'body {\n  font-family: system-ui, -apple-system, sans-serif;\n  margin: 0;\n  padding: 20px;\n  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);\n  color: white;\n}\n\nh1 {\n  text-align: center;\n}',
@@ -39,7 +38,6 @@ const techStacks = [
     name: 'React',
     description: 'React 18 app with Vite',
     icon: '⚛️',
-    color: 'bg-blue-50 border-blue-200 hover:border-blue-400',
     files: {
       'package.json': JSON.stringify({
         name: 'react-app',
@@ -60,7 +58,6 @@ const techStacks = [
     name: 'Vue',
     description: 'Vue 3 app with Vite',
     icon: '💚',
-    color: 'bg-green-50 border-green-200 hover:border-green-400',
     files: {
       'package.json': JSON.stringify({
         name: 'vue-app',
@@ -80,7 +77,6 @@ const techStacks = [
     name: 'Node.js',
     description: 'Node.js server with Express',
     icon: '🟢',
-    color: 'bg-emerald-50 border-emerald-200 hover:border-emerald-400',
     files: {
       'package.json': JSON.stringify({
         name: 'node-server',
@@ -236,32 +232,38 @@ const CreateProject = ({ buttonVarient }: TCreateProject) => {
             <div className="space-y-4">
               <div>
                 <label className="text-sm font-medium mb-3 flex items-center gap-2">
-                  <Layers className="w-4 h-4" />
+                  <Layers className="w-4 h-4 text-primary" />
                   Select Tech Stack
                 </label>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-4">
                   {techStacks.map((stack) => (
                     <button
                       key={stack.id}
                       type="button"
                       onClick={() => setSelectedStack(stack.id)}
                       className={`
-                        p-4 border-2 rounded-lg text-left transition-all
+                        group relative p-5 border-2 rounded-xl text-left transition-all duration-300 hover:scale-[1.02] hover:shadow-lg
                         ${selectedStack === stack.id 
-                          ? 'border-blue-500 bg-blue-50 shadow-md' 
-                          : stack.color
+                          ? 'border-primary bg-primary/10 shadow-xl ring-2 ring-primary/20 dark:bg-primary/20' 
+                          : 'border-border hover:border-primary/50 bg-card hover:bg-accent/50 dark:hover:bg-accent/20'
                         }
                       `}
                     >
                       <div className="flex items-start gap-3">
-                        <span className="text-3xl">{stack.icon}</span>
-                        <div className="flex-1">
-                          <h3 className="font-semibold mb-1">{stack.name}</h3>
-                          <p className="text-xs text-gray-600">{stack.description}</p>
+                        <div className="text-4xl transition-transform group-hover:scale-110">
+                          {stack.icon}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-bold text-base mb-1 text-foreground group-hover:text-primary transition-colors">
+                            {stack.name}
+                          </h3>
+                          <p className="text-xs text-muted-foreground leading-relaxed">
+                            {stack.description}
+                          </p>
                         </div>
                         {selectedStack === stack.id && (
-                          <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
-                            <span className="text-white text-xs">✓</span>
+                          <div className="absolute top-3 right-3 w-6 h-6 bg-primary rounded-full flex items-center justify-center shadow-lg animate-in zoom-in duration-200">
+                            <span className="text-primary-foreground text-sm font-bold">✓</span>
                           </div>
                         )}
                       </div>
@@ -272,11 +274,17 @@ const CreateProject = ({ buttonVarient }: TCreateProject) => {
 
               {/* Preview Files */}
               {selectedStack && (
-                <div className="mt-4 p-3 bg-gray-50 rounded-lg border">
-                  <p className="text-sm font-medium mb-2">Files that will be created:</p>
+                <div className="mt-4 p-4 bg-muted/50 dark:bg-muted/20 rounded-xl border border-border/50 backdrop-blur-sm">
+                  <p className="text-sm font-semibold mb-3 flex items-center gap-2 text-foreground">
+                    <span className="text-base">📁</span>
+                    Files that will be created:
+                  </p>
                   <div className="flex flex-wrap gap-2">
                     {Object.keys(techStacks.find(t => t.id === selectedStack)?.files || {}).map(fileName => (
-                      <span key={fileName} className="text-xs px-2 py-1 bg-white border rounded">
+                      <span 
+                        key={fileName} 
+                        className="text-xs px-3 py-1.5 bg-background dark:bg-background/80 border border-border/70 rounded-lg font-mono text-foreground shadow-sm hover:shadow-md transition-shadow"
+                      >
                         📄 {fileName}
                       </span>
                     ))}

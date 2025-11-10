@@ -98,7 +98,7 @@ const EditorSidebar = () => {
   }, []);
   
   return (
-    <Sidebar className="h-[calc(100vh-4rem)] max-h-[calc(100vh-4rem)] top-16 border-r border-border/50 backdrop-blur-sm bg-sidebar/95">
+    <Sidebar className="h-[calc(100vh-4rem)] max-h-[calc(100vh-4rem)] top-16 border-r border-border/50 backdrop-blur-sm bg-sidebar/95 lg:w-[20%] lg:min-w-[20%] lg:max-w-[20%] w-64">
       <SidebarHeader className="bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border-b border-border/50 flex flex-row items-center py-3 px-4">
         <div className="flex items-center gap-2">
           <div className="h-5 w-1 bg-gradient-to-b from-primary to-primary/50 rounded-full" />

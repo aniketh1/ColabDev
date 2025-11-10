@@ -16,15 +16,15 @@ export default function EditorLayout({
         {/* Fixed Header */}
         <EditorHeader />
         
-        {/* Main Content Area */}
+        {/* Main Content Area - Desktop: 20% sidebar + 80% editor */}
         <div className="flex-1 flex overflow-hidden">
           <BrowerRunCode>
             <SidebarProvider>
-              {/* Fixed Sidebar - No Overlay */}
+              {/* Sidebar - 20% on desktop, draggable on tablet/mobile */}
               <EditorSidebar />
 
-              {/* Main Editor Area */}
-              <main className="flex-1 flex flex-col overflow-hidden bg-gradient-to-br from-background via-background to-muted/20">
+              {/* Main Editor Area - 80% on desktop, 100% on tablet/mobile */}
+              <main className="flex-1 lg:w-[80%] w-full flex flex-col overflow-hidden bg-gradient-to-br from-background via-background to-muted/20">
                 <FileOpen />
                 <div className="flex-1 overflow-auto">
                   {children}
