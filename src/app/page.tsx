@@ -103,6 +103,8 @@ export default function Home() {
           <nav className="hidden md:flex items-center gap-6">
             <a href="#features" className="text-sm font-medium hover:text-primary transition-colors">Features</a>
             <a href="#use-cases" className="text-sm font-medium hover:text-primary transition-colors">Use Cases</a>
+            <a href="#learn" className="text-sm font-medium hover:text-primary transition-colors">Learn</a>
+            <a href="/explore" className="text-sm font-medium hover:text-primary transition-colors">🔍 Explore</a>
             <a href="/about" className="text-sm font-medium hover:text-primary transition-colors">About</a>
             <a href="/dashboard" className="text-sm font-medium hover:text-primary transition-colors">Dashboard</a>
           </nav>
@@ -187,6 +189,159 @@ export default function Home() {
             <source src="/video.mp4" type="video/mp4" />
             Your browser does not support the video tag.
           </video>
+        </div>
+      </section>
+
+      {/* Gen-Z Learning Section */}
+      <section id="learn" className="py-20 lg:py-32 bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 dark:from-purple-950/20 dark:via-pink-950/20 dark:to-blue-950/20 relative overflow-hidden">
+        {/* Animated Background Elements */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-20 left-10 w-72 h-72 bg-purple-300 dark:bg-purple-600 rounded-full mix-blend-multiply dark:mix-blend-soft-light filter blur-xl opacity-30 animate-blob"></div>
+          <div className="absolute top-40 right-10 w-72 h-72 bg-pink-300 dark:bg-pink-600 rounded-full mix-blend-multiply dark:mix-blend-soft-light filter blur-xl opacity-30 animate-blob animation-delay-2000"></div>
+          <div className="absolute -bottom-8 left-1/2 w-72 h-72 bg-blue-300 dark:bg-blue-600 rounded-full mix-blend-multiply dark:mix-blend-soft-light filter blur-xl opacity-30 animate-blob animation-delay-4000"></div>
+        </div>
+
+        <div className="container px-4 mx-auto relative z-10">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            {/* Left Content */}
+            <div className="space-y-8">
+              <div className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-full px-4 py-2 text-sm font-semibold">
+                <span className="animate-pulse">✨</span>
+                <span>NO CAP FR FR</span>
+              </div>
+              
+              <h2 className="text-4xl lg:text-6xl font-black leading-tight">
+                <span className="bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent">
+                  Learn By Doing,
+                </span>
+                <br />
+                <span className="text-foreground">
+                  Not Just Watching
+                </span>
+                <span className="ml-2 inline-block animate-bounce">👀</span>
+              </h2>
+
+              <div className="space-y-4 text-lg text-muted-foreground">
+                <p className="flex items-start gap-3">
+                  <span className="text-2xl">🔥</span>
+                  <span><strong className="text-foreground">Vibe Check:</strong> Peep real projects from devs crushing it right now. No cap, these are actual working codes!</span>
+                </p>
+                <p className="flex items-start gap-3">
+                  <span className="text-2xl">💯</span>
+                  <span><strong className="text-foreground">No Gatekeeping:</strong> Read-only access means you can explore everything without breaking stuff. It&apos;s giving safe space energy!</span>
+                </p>
+                <p className="flex items-start gap-3">
+                  <span className="text-2xl">🚀</span>
+                  <span><strong className="text-foreground">Main Character Energy:</strong> See how projects evolve, learn patterns, and level up your coding game. That&apos;s the tea sis!</span>
+                </p>
+                <p className="flex items-start gap-3">
+                  <span className="text-2xl">✨</span>
+                  <span><strong className="text-foreground">Built Different:</strong> From HTML basics to React wizardry - find projects that match your vibe and skill level.</span>
+                </p>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-4 pt-4">
+                <Button 
+                  onClick={() => router.push("/explore")} 
+                  size="lg" 
+                  className="cursor-pointer px-8 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold text-lg group"
+                >
+                  <span className="mr-2 group-hover:scale-110 transition-transform inline-block">🔍</span>
+                  Start Exploring Projects
+                  <Rocket className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                </Button>
+                <Button 
+                  onClick={() => router.push("/sign-up")} 
+                  variant="outline" 
+                  size="lg" 
+                  className="cursor-pointer px-8 border-2 border-purple-600 text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-950 font-semibold"
+                >
+                  Join the Squad
+                </Button>
+              </div>
+
+              {/* Stats */}
+              <div className="grid grid-cols-3 gap-4 pt-8">
+                <div className="text-center">
+                  <div className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">1000+</div>
+                  <div className="text-sm text-muted-foreground">Projects</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-3xl font-bold bg-gradient-to-r from-pink-600 to-blue-600 bg-clip-text text-transparent">500+</div>
+                  <div className="text-sm text-muted-foreground">Devs</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">24/7</div>
+                  <div className="text-sm text-muted-foreground">Active</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Illustration */}
+            <div className="relative">
+              <div className="relative z-10 bg-white dark:bg-gray-900 rounded-3xl shadow-2xl border border-border p-8 transform hover:scale-105 transition-transform duration-300">
+                {/* Code Window */}
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2 pb-4 border-b border-border">
+                    <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                    <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+                    <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                    <span className="ml-4 text-sm text-muted-foreground font-mono">explore-projects.tsx</span>
+                  </div>
+                  
+                  <div className="space-y-2 font-mono text-sm">
+                    <div className="text-purple-600 dark:text-purple-400">
+                      <span className="text-blue-600 dark:text-blue-400">const</span> learningMode = <span className="text-green-600 dark:text-green-400">&apos;activated&apos;</span>;
+                    </div>
+                    <div className="text-purple-600 dark:text-purple-400">
+                      <span className="text-blue-600 dark:text-blue-400">const</span> vibeCheck = <span className="text-green-600 dark:text-green-400">&apos;immaculate&apos;</span>;
+                    </div>
+                    <div className="h-2"></div>
+                    <div className="text-pink-600 dark:text-pink-400">
+                      <span className="text-blue-600 dark:text-blue-400">function</span> <span className="text-yellow-600 dark:text-yellow-400">levelUp</span>() {"{"}
+                    </div>
+                    <div className="pl-4 text-muted-foreground">
+                      <span className="text-purple-600 dark:text-purple-400">explore</span>(<span className="text-green-600 dark:text-green-400">&apos;community-projects&apos;</span>);
+                    </div>
+                    <div className="pl-4 text-muted-foreground">
+                      <span className="text-purple-600 dark:text-purple-400">learn</span>(<span className="text-green-600 dark:text-green-400">&apos;real-code&apos;</span>);
+                    </div>
+                    <div className="pl-4 text-muted-foreground">
+                      <span className="text-purple-600 dark:text-purple-400">build</span>(<span className="text-green-600 dark:text-green-400">&apos;amazing-stuff&apos;</span>);
+                    </div>
+                    <div className="text-pink-600 dark:text-pink-400">{"}"}</div>
+                  </div>
+
+                  {/* Animated Elements */}
+                  <div className="pt-6 space-y-3">
+                    <div className="flex items-center gap-3 animate-pulse">
+                      <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                      <span className="text-xs text-green-600 dark:text-green-400 font-semibold">Real-time projects loading...</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="w-2 h-2 rounded-full bg-purple-500 animate-ping"></div>
+                      <span className="text-xs text-purple-600 dark:text-purple-400 font-semibold">50+ devs coding right now!</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="w-2 h-2 rounded-full bg-pink-500"></div>
+                      <span className="text-xs text-pink-600 dark:text-pink-400 font-semibold">New project just dropped! 🔥</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Floating Elements */}
+              <div className="absolute -top-6 -right-6 bg-gradient-to-br from-yellow-400 to-orange-500 text-white rounded-2xl p-4 shadow-lg transform rotate-12 hover:rotate-0 transition-transform">
+                <div className="text-2xl font-black">100%</div>
+                <div className="text-xs font-semibold">FREE</div>
+              </div>
+              
+              <div className="absolute -bottom-6 -left-6 bg-gradient-to-br from-green-400 to-cyan-500 text-white rounded-2xl p-4 shadow-lg transform -rotate-12 hover:rotate-0 transition-transform">
+                <div className="text-2xl">🎯</div>
+                <div className="text-xs font-semibold">BASED</div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
