@@ -14,8 +14,25 @@ const nextConfig: NextConfig = {
       'node_modules/@esbuild/linux-x64',
     ],
   },
-  // Note: WebContainer requires CORS headers (Cross-Origin-Embedder-Policy and Cross-Origin-Opener-Policy)
-  // but these headers break Next-Auth. We'll use an alternative approach with a separate preview page.
+  // Add headers required for WebContainer (WebAssembly support)
+  async headers() {
+    return [
+      {
+        // Apply to editor routes only to avoid breaking Clerk
+        source: '/(dashboard)/editor/:path*',
+        headers: [
+          {
+            key: 'Cross-Origin-Embedder-Policy',
+            value: 'require-corp',
+          },
+          {
+            key: 'Cross-Origin-Opener-Policy',
+            value: 'same-origin',
+          },
+        ],
+      },
+    ];
+  },
 };
 
 export default nextConfig;

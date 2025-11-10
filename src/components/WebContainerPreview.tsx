@@ -144,7 +144,18 @@ export function WebContainerPreview({ projectId, techStack, files }: WebContaine
         console.error('❌ WebContainer error:', err);
         if (isMounted) {
           setStatus('error');
-          setError(err.message || 'Failed to start WebContainer');
+          
+          // Provide user-friendly error messages
+          let errorMessage = err.message || 'Failed to start WebContainer';
+          
+          if (err.message?.includes('Cross-Origin-Opener-Policy') || 
+              err.message?.includes('WebAssembly.Memory')) {
+            errorMessage = 'WebContainer requires specific browser headers. Please refresh the page and try again.';
+          } else if (err.message?.includes('Unable to create more instances')) {
+            errorMessage = 'WebContainer instance limit reached. Please close other preview tabs and refresh.';
+          }
+          
+          setError(errorMessage);
           addLog(`❌ Error: ${err.message}`);
         }
       }
