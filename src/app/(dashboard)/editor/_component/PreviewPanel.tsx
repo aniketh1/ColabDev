@@ -76,7 +76,7 @@ export default function PreviewPanel() {
     }
   }, [mainFileContent, openBrowser, techStack]);
 
-  // Auto-run for React/Vue projects when files are loaded
+  // Auto-run for React/Node projects when files are loaded
   useEffect(() => {
     if (openBrowser && techStack && techStack !== 'html' && Object.keys(allFiles).length > 0) {
       handleRunCode();
@@ -97,7 +97,7 @@ export default function PreviewPanel() {
     }
   }, [output]);
 
-  // Execute code for React/Vue/Node projects
+  // Execute code for React/Node projects
   const handleRunCode = async () => {
     if (!techStack || techStack === 'html') return;
     
@@ -109,8 +109,6 @@ export default function PreviewPanel() {
       let mainCode = '';
       if (techStack === 'react') {
         mainCode = allFiles['src/App.jsx'] || allFiles['App.jsx'] || code || '';
-      } else if (techStack === 'vue') {
-        mainCode = allFiles['src/App.vue'] || allFiles['App.vue'] || code || '';
       } else if (techStack === 'node') {
         mainCode = allFiles['index.js'] || allFiles['main.js'] || code || '';
       }

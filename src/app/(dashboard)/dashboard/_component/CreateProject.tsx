@@ -15,7 +15,7 @@ import Axios from "@/lib/Axios";
 import { useRouter } from "next/navigation";
 import { Code2, Layers } from "lucide-react";
 
-type TechStack = 'html' | 'react' | 'vue' | 'node' | 'nextjs';
+type TechStack = 'html' | 'react' | 'node' | 'nextjs';
 
 type TCreateProject = {
   buttonVarient?: "outline" | "default";
@@ -53,25 +53,7 @@ const techStacks = [
       'src/App.jsx': 'import React, { useState } from "react";\n\nfunction App() {\n  const [count, setCount] = useState(0);\n\n  return (\n    <div style={{ padding: "40px", fontFamily: "system-ui" }}>\n      <h1>Hello React! 🚀</h1>\n      <p>Count: {count}</p>\n      <button onClick={() => setCount(count + 1)}>\n        Click me\n      </button>\n    </div>\n  );\n}\n\nexport default App;',
     },
   },
-  {
-    id: 'vue' as TechStack,
-    name: 'Vue',
-    description: 'Vue 3 app with Vite',
-    icon: '💚',
-    files: {
-      'package.json': JSON.stringify({
-        name: 'vue-app',
-        version: '1.0.0',
-        scripts: { dev: 'vite' },
-        dependencies: { vue: '^3.3.4' },
-        devDependencies: { '@vitejs/plugin-vue': '^4.2.3', vite: '^4.3.9' },
-      }, null, 2),
-      'index.html': '<!DOCTYPE html>\n<html lang="en">\n  <head>\n    <meta charset="UTF-8" />\n    <title>Vue App</title>\n  </head>\n  <body>\n    <div id="app"></div>\n    <script type="module" src="/src/main.js"></script>\n  </body>\n</html>',
-      'vite.config.js': 'import { defineConfig } from "vite";\nimport vue from "@vitejs/plugin-vue";\n\nexport default defineConfig({\n  plugins: [vue()],\n  server: { port: 3000 }\n});',
-      'src/main.js': 'import { createApp } from "vue";\nimport App from "./App.vue";\n\ncreateApp(App).mount("#app");',
-      'src/App.vue': '<template>\n  <div style="padding: 40px; font-family: system-ui;">\n    <h1>Hello Vue! 💚</h1>\n    <p>Count: {{ count }}</p>\n    <button @click="count++">Click me</button>\n  </div>\n</template>\n\n<script setup>\nimport { ref } from "vue";\nconst count = ref(0);\n</script>',
-    },
-  },
+
   {
     id: 'node' as TechStack,
     name: 'Node.js',
@@ -163,8 +145,6 @@ const CreateProject = ({ buttonVarient }: TCreateProject) => {
         let firstFile = 'index.html';
         if (selectedStack === 'react') {
           firstFile = 'src/App.jsx';
-        } else if (selectedStack === 'vue') {
-          firstFile = 'src/App.vue';
         } else if (selectedStack === 'node') {
           firstFile = 'server.js';
         }

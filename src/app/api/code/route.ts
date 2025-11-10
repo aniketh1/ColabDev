@@ -89,7 +89,7 @@ export async function POST(request: NextRequest) {
             // Define files that can be auto-created
             const allowedAutoCreate = [
                 'index.html', 'style.css', 'script.js',
-                'App.jsx', 'App.js', 'App.vue', 'App.tsx',
+                'App.jsx', 'App.js', 'App.tsx',
                 'main.jsx', 'main.js', 'main.tsx',
                 'index.jsx', 'index.tsx'
             ];
@@ -364,24 +364,6 @@ export default App;
 `;
             }
             return `// Add your code here
-`;
-        
-        case 'vue':
-            return `<template>
-    <div>
-        <h1>Hello World!</h1>
-    </div>
-</template>
-
-<script>
-export default {
-    name: 'App'
-}
-</script>
-
-<style scoped>
-/* Add your styles here */
-</style>
 `;
         
         default:

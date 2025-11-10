@@ -3,7 +3,7 @@ import { buildCode, initEsbuild, isInitialized } from './esbuild';
 /**
  * Language types supported by the runner
  */
-export type Language = 'react' | 'vue' | 'node' | 'javascript' | 'html' | 'css';
+export type Language = 'react' | 'node' | 'javascript' | 'html' | 'css';
 
 /**
  * Output types for different execution modes
@@ -67,8 +67,6 @@ const runNodeCode = async (code: string): Promise<RunCodeOutput> => {
   }
 };
 
-
-
 /**
  * Generate HTML wrapper for frontend code
  */
@@ -119,47 +117,6 @@ const generateHTML = (bundledCode: string, language: Language): string => {
           const container = document.getElementById('root');
           const root = ReactDOM.createRoot(container);
           root.render(React.createElement(App));
-        } else {
-          console.warn('No App component found. Make sure to define a component named "App".');
-        }
-      } catch (error) {
-        console.error('Execution error:', error);
-        document.body.innerHTML = '<div style="color: red; padding: 20px; font-family: monospace;"><h2>⚠️ Error</h2><pre style="background: #ffebee; padding: 15px; border-radius: 5px; overflow: auto;">' + error.message + '\\n\\n' + error.stack + '</pre><p style="margin-top: 20px; color: #666;">Tip: Make sure your component is named "App" and doesn\\'t use import statements.</p></div>';
-      }
-    })();
-  </script>
-</body>
-</html>
-    `.trim();
-  }
-
-  // Vue setup
-  if (language === 'vue') {
-    return `
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Vue Preview</title>
-  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
-    #app { width: 100%; height: 100vh; }
-  </style>
-</head>
-<body>
-  <div id="app"></div>
-  <script>
-    (function() {
-      try {
-        ${bundledCode.replace(/<\/script>/gi, '<\\/script>')}
-
-        // Auto-mount if component is exported
-        if (typeof App !== 'undefined') {
-          const { createApp } = Vue;
-          createApp(App).mount('#app');
         } else {
           console.warn('No App component found. Make sure to define a component named "App".');
         }
@@ -258,9 +215,9 @@ const runFrontendCode = async (
       };
     }
 
-    // For JavaScript/React/Vue - determine loader and transform
+    // For JavaScript/React - determine loader and transform
     const loader: 'js' | 'jsx' | 'ts' | 'tsx' =
-      language === 'react' || language === 'vue' ? 'jsx' : 'js';
+      language === 'react' ? 'jsx' : 'js';
 
     // Build the code (Babel will be loaded automatically)
     const bundledCode = await buildCode(code, { loader });
@@ -324,5 +281,5 @@ export const runCode = async (
  * Get supported languages
  */
 export const getSupportedLanguages = (): Language[] => {
-  return ['react', 'vue', 'node', 'javascript', 'html', 'css'];
+  return ['react', 'node', 'javascript', 'html', 'css'];
 };

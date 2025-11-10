@@ -24,7 +24,7 @@ const projectSchema = new mongoose.Schema<IProject>({
     techStack : {
         type : String,
         default : 'html',
-        enum : ['html', 'react', 'vue', 'node', 'nextjs']
+        enum : ['html', 'react', 'node', 'nextjs']
     },
     collaborators : [{
         type : mongoose.Schema.ObjectId,
