@@ -1,6 +1,6 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
-import connectDB from "@/config/connectDB";
+import { connectDB } from "@/config/connectDB";
 import ProjectModel from "@/models/ProjectModel";
 
 export async function GET(req: NextRequest) {
@@ -35,7 +35,7 @@ export async function GET(req: NextRequest) {
 
         // Fetch projects with owner details
         const projects = await ProjectModel.find(query)
-            .populate("userId", "firstName lastName username email")
+            .populate("userId", "name email avatar clerkId")
             .sort({ lastActiveAt: -1, updatedAt: -1 })
             .limit(limit)
             .skip(skip)
@@ -55,10 +55,10 @@ export async function GET(req: NextRequest) {
             isPublic: project.isPublic,
             owner: {
                 _id: project.userId._id,
-                firstName: project.userId.firstName,
-                lastName: project.userId.lastName,
-                username: project.userId.username,
+                name: project.userId.name,
                 email: project.userId.email,
+                avatar: project.userId.avatar,
+                clerkId: project.userId.clerkId,
             },
         }));
 

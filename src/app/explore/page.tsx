@@ -18,10 +18,10 @@ type Project = {
   createdAt: string;
   owner: {
     _id: string;
-    firstName: string;
-    lastName: string;
-    username: string;
+    name: string;
     email: string;
+    avatar?: string;
+    clerkId: string;
   };
 };
 
@@ -204,7 +204,7 @@ export default function ExplorePage() {
                     <div className="flex items-center gap-2 text-sm text-gray-600">
                       <UserIcon className="w-4 h-4" />
                       <span className="truncate">
-                        {project.owner.firstName} {project.owner.lastName}
+                        {project.owner.name}
                       </span>
                     </div>
                     <div className="flex items-center gap-2 text-sm text-gray-500">
@@ -212,7 +212,7 @@ export default function ExplorePage() {
                       <span>Last active {getTimeAgo(project.lastActiveAt)}</span>
                     </div>
                     <Link
-                      href={`/browser/${project.owner.username}/${project._id}/index.html`}
+                      href={`/browser/${project.owner.name}/${project._id}/index.html`}
                       className="block"
                     >
                       <Button
