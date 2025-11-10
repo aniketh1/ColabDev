@@ -7,10 +7,21 @@ import { TypeAnimation } from "react-type-animation";
 import { Code2, Users, Zap, Cloud, MessageSquare, Shield, Rocket, BookOpen, Github, Linkedin, Twitter } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Moon, Sun } from "lucide-react";
+import LiquidEther from "@/components/LiquidEther";
+import { useEffect, useState } from "react";
 
 export default function Home() {
   const router = useRouter()
   const { theme, setTheme } = useTheme()
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  // Logo colors for light and dark mode
+  const lightModeColors = ['#5DADE2', '#3498DB', '#2980B9'] // Blue shades from logo
+  const darkModeColors = ['#5DADE2', '#3498DB', '#1ABC9C'] // Blue + teal for dark mode
 
   const features = [
     {
@@ -95,9 +106,34 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white via-blue-50/30 to-white dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 overflow-hidden transition-colors duration-300">
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-white/80 dark:bg-black/80 backdrop-blur-md border-b border-border">
+    <div className="min-h-screen bg-gradient-to-b from-white via-blue-50/30 to-white dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 overflow-hidden transition-colors duration-300 relative">
+      {/* Liquid Ether Background Animation */}
+      {mounted && (
+        <div className="fixed inset-0 z-0 opacity-30 dark:opacity-40 pointer-events-none">
+          <LiquidEther
+            colors={theme === 'dark' ? darkModeColors : lightModeColors}
+            mouseForce={15}
+            cursorSize={120}
+            isViscous={false}
+            viscous={30}
+            iterationsViscous={32}
+            iterationsPoisson={32}
+            resolution={0.4}
+            isBounce={false}
+            autoDemo={true}
+            autoSpeed={0.3}
+            autoIntensity={1.8}
+            takeoverDuration={0.25}
+            autoResumeDelay={2000}
+            autoRampDuration={0.6}
+          />
+        </div>
+      )}
+      
+      {/* Content Wrapper */}
+      <div className="relative z-10">
+        {/* Header */}
+        <header className="sticky top-0 z-50 bg-white/80 dark:bg-black/80 backdrop-blur-md border-b border-border">
         <div className="container px-4 mx-auto flex items-center justify-between h-20">
           <Logo />
           <nav className="hidden md:flex items-center gap-6">
@@ -508,6 +544,7 @@ export default function Home() {
           </div>
         </div>
       </footer>
+      </div>
     </div>
   );
 }
