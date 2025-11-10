@@ -280,8 +280,6 @@ async function handleMount(container: WebContainer, techStack: 'react' | 'vue' |
     }
 
     addLog('Mounting project files...');
-    console.log('📁 File tree structure:', fileTree);
-    console.log('📝 User files received:', Object.keys(files));
     await container.mount(fileTree);
     addLog('✅ Files mounted');
 }
@@ -307,7 +305,7 @@ async function handleInstall(container: WebContainer, addLog: (m: string) => voi
 
 async function handleStart(container: WebContainer, techStack: 'react' | 'vue' | 'node', addLog: (m: string) => void): Promise<string> {
     const startCommand = techStack === 'node' ? 'start' : 'dev';
-    console.log(`🚀 Running: npm run ${startCommand}`);
+    addLog(`🚀 Running: npm run ${startCommand}`);
 
     const serverReadyPromise = new Promise<string>((resolve, reject) => {
         const timeout = setTimeout(() => {
@@ -315,7 +313,7 @@ async function handleStart(container: WebContainer, techStack: 'react' | 'vue' |
         }, 60000);
 
         container.on('server-ready', (port, serverUrl) => {
-            console.log(`✅ Server ready event received - Port: ${port}, URL: ${serverUrl}`);
+            addLog(`✅ Server ready event received - Port: ${port}`);
             clearTimeout(timeout);
             resolve(serverUrl);
         });
@@ -328,8 +326,8 @@ async function handleStart(container: WebContainer, techStack: 'react' | 'vue' |
             write(data) {
                 const message = data.trim();
                 if (message) {
+                    // Keep console.log for debugging without cluttering UI logs
                     console.log('📦 Dev server:', message);
-                    addLog(message);
                 }
             },
         })
