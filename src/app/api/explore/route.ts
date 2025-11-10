@@ -18,13 +18,24 @@ export async function GET(req: NextRequest) {
         await connectDB();
 
         const { searchParams } = new URL(req.url);
-        const filter = searchParams.get("filter") || "all"; // all, recent, live
+        const filter = searchParams.get("filter") || "all";
         const limit = parseInt(searchParams.get("limit") || "20");
         const page = parseInt(searchParams.get("page") || "1");
         const skip = (page - 1) * limit;
 
-        // Base query: only public projects
-        const query: any = { isPublic: true };
+        // Step 1: Fetch all users and create a lookup map
+        const UserModel = (await import("@/models/User")).default;
+        const allUsers = await UserModel.find({}, { _id: 1, name: 1, email: 1, avatar: 1, clerkId: 1 }).lean();
+        const userMap = new Map(allUsers.map((user: any) => [user._id.toString(), user]));
+
+        // Step 2: Get array of valid user IDs
+        const validUserIds = Array.from(userMap.keys());
+
+        // Step 3: Build query - only public projects from existing users
+        const query: any = { 
+            isPublic: true,
+            userId: { $in: validUserIds }
+        };
 
         // Filter by recent (last 5 days)
         if (filter === "recent") {
@@ -33,9 +44,8 @@ export async function GET(req: NextRequest) {
             query.lastActiveAt = { $gte: fiveDaysAgo };
         }
 
-        // Fetch projects with owner details
+        // Step 4: Fetch projects
         const projects = await ProjectModel.find(query)
-            .populate("userId", "name email avatar clerkId")
             .sort({ lastActiveAt: -1, updatedAt: -1 })
             .limit(limit)
             .skip(skip)
@@ -44,44 +54,27 @@ export async function GET(req: NextRequest) {
         // Get total count for pagination
         const totalCount = await ProjectModel.countDocuments(query);
 
-        // Transform the data for frontend, filtering out projects without valid user data
-        const transformedProjects = projects
-            .filter((project: any) => {
-                // Check if userId exists and is populated
-                if (!project.userId) {
-                    console.log(`Project ${project._id} has no userId`);
-                    return false;
-                }
-                if (typeof project.userId !== 'object') {
-                    console.log(`Project ${project._id} userId not populated: ${project.userId}`);
-                    return false;
-                }
-                return true;
-            })
-            .map((project: any) => {
-                try {
-                    return {
-                        _id: project._id,
-                        name: project.name,
-                        techStack: project.techStack,
-                        lastActiveAt: project.lastActiveAt,
-                        updatedAt: project.updatedAt,
-                        createdAt: project.createdAt,
-                        isPublic: project.isPublic,
-                        owner: {
-                            _id: project.userId._id,
-                            name: project.userId.name || 'Unknown User',
-                            email: project.userId.email || '',
-                            avatar: project.userId.avatar || '',
-                            clerkId: project.userId.clerkId || '',
-                        },
-                    };
-                } catch (mapError) {
-                    console.error(`Error mapping project ${project._id}:`, mapError);
-                    return null;
-                }
-            })
-            .filter(Boolean); // Remove any null entries from failed mappings
+        // Step 5: Transform projects with user data from our map
+        const transformedProjects = projects.map((project: any) => {
+            const user = userMap.get(project.userId.toString());
+            
+            return {
+                _id: project._id,
+                name: project.name,
+                techStack: project.techStack,
+                lastActiveAt: project.lastActiveAt,
+                updatedAt: project.updatedAt,
+                createdAt: project.createdAt,
+                isPublic: project.isPublic,
+                owner: {
+                    _id: user?._id || project.userId,
+                    name: user?.name || 'Unknown User',
+                    email: user?.email || '',
+                    avatar: user?.avatar || '',
+                    clerkId: user?.clerkId || '',
+                },
+            };
+        });
 
         return NextResponse.json({
             success: true,
