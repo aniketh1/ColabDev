@@ -44,23 +44,25 @@ export async function GET(req: NextRequest) {
         // Get total count for pagination
         const totalCount = await ProjectModel.countDocuments(query);
 
-        // Transform the data for frontend
-        const transformedProjects = projects.map((project: any) => ({
-            _id: project._id,
-            name: project.name,
-            techStack: project.techStack,
-            lastActiveAt: project.lastActiveAt,
-            updatedAt: project.updatedAt,
-            createdAt: project.createdAt,
-            isPublic: project.isPublic,
-            owner: {
-                _id: project.userId._id,
-                name: project.userId.name,
-                email: project.userId.email,
-                avatar: project.userId.avatar,
-                clerkId: project.userId.clerkId,
-            },
-        }));
+        // Transform the data for frontend, filtering out projects without valid user data
+        const transformedProjects = projects
+            .filter((project: any) => project.userId && typeof project.userId === 'object')
+            .map((project: any) => ({
+                _id: project._id,
+                name: project.name,
+                techStack: project.techStack,
+                lastActiveAt: project.lastActiveAt,
+                updatedAt: project.updatedAt,
+                createdAt: project.createdAt,
+                isPublic: project.isPublic,
+                owner: {
+                    _id: project.userId._id,
+                    name: project.userId.name || 'Unknown User',
+                    email: project.userId.email || '',
+                    avatar: project.userId.avatar || '',
+                    clerkId: project.userId.clerkId || '',
+                },
+            }));
 
         return NextResponse.json({
             success: true,
