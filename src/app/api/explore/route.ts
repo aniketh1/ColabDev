@@ -46,23 +46,42 @@ export async function GET(req: NextRequest) {
 
         // Transform the data for frontend, filtering out projects without valid user data
         const transformedProjects = projects
-            .filter((project: any) => project.userId && typeof project.userId === 'object')
-            .map((project: any) => ({
-                _id: project._id,
-                name: project.name,
-                techStack: project.techStack,
-                lastActiveAt: project.lastActiveAt,
-                updatedAt: project.updatedAt,
-                createdAt: project.createdAt,
-                isPublic: project.isPublic,
-                owner: {
-                    _id: project.userId._id,
-                    name: project.userId.name || 'Unknown User',
-                    email: project.userId.email || '',
-                    avatar: project.userId.avatar || '',
-                    clerkId: project.userId.clerkId || '',
-                },
-            }));
+            .filter((project: any) => {
+                // Check if userId exists and is populated
+                if (!project.userId) {
+                    console.log(`Project ${project._id} has no userId`);
+                    return false;
+                }
+                if (typeof project.userId !== 'object') {
+                    console.log(`Project ${project._id} userId not populated: ${project.userId}`);
+                    return false;
+                }
+                return true;
+            })
+            .map((project: any) => {
+                try {
+                    return {
+                        _id: project._id,
+                        name: project.name,
+                        techStack: project.techStack,
+                        lastActiveAt: project.lastActiveAt,
+                        updatedAt: project.updatedAt,
+                        createdAt: project.createdAt,
+                        isPublic: project.isPublic,
+                        owner: {
+                            _id: project.userId._id,
+                            name: project.userId.name || 'Unknown User',
+                            email: project.userId.email || '',
+                            avatar: project.userId.avatar || '',
+                            clerkId: project.userId.clerkId || '',
+                        },
+                    };
+                } catch (mapError) {
+                    console.error(`Error mapping project ${project._id}:`, mapError);
+                    return null;
+                }
+            })
+            .filter(Boolean); // Remove any null entries from failed mappings
 
         return NextResponse.json({
             success: true,
@@ -76,8 +95,14 @@ export async function GET(req: NextRequest) {
         });
     } catch (error: any) {
         console.error("Explore API Error:", error);
+        console.error("Error stack:", error.stack);
         return NextResponse.json(
-            { message: "Failed to fetch projects", error: error.message },
+            { 
+                success: false,
+                message: "Failed to fetch projects", 
+                error: error.message,
+                details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+            },
             { status: 500 }
         );
     }
