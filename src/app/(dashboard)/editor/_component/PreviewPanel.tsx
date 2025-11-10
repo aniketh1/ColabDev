@@ -4,31 +4,31 @@ import { useEditorContext } from "../_provider/EditorProvider";
 import { X, Play, RotateCw } from "lucide-react";
 
 export default function PreviewPanel() {
-  const { openBrowser, setOpenBrowser, code } = useEditorContext();
+  const { openBrowser, setOpenBrowser, mainFileContent } = useEditorContext();
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
-  // Update preview when code changes
+  // Update preview when main file content changes
   useEffect(() => {
-    if (openBrowser && iframeRef.current && code) {
+    if (openBrowser && iframeRef.current && mainFileContent) {
       const iframe = iframeRef.current;
       const doc = iframe.contentDocument || iframe.contentWindow?.document;
       if (doc) {
         doc.open();
-        doc.write(code);
+        doc.write(mainFileContent);
         doc.close();
       }
     }
-  }, [code, openBrowser]);
+  }, [mainFileContent, openBrowser]);
 
   if (!openBrowser) return null;
 
   const handleRefresh = () => {
-    if (iframeRef.current && code) {
+    if (iframeRef.current && mainFileContent) {
       const iframe = iframeRef.current;
       const doc = iframe.contentDocument || iframe.contentWindow?.document;
       if (doc) {
         doc.open();
-        doc.write(code);
+        doc.write(mainFileContent);
         doc.close();
       }
     }

@@ -25,7 +25,7 @@ const CodeEditor = () => {
   const projectId = params?.projectId as string;
   const [content, setContent] = useState<string>("");
   const [fileId, setFileId] = useState<string>();
-  const { isLoading, setIsLoading, setCode, projectAccess } = useEditorContext();
+  const { isLoading, setIsLoading, setCode, setMainFileContent, projectAccess } = useEditorContext();
   const editorViewRef = useRef<EditorView | null>(null);
   const isRemoteUpdateRef = useRef(false);
   const lastSyncedContentRef = useRef<string>("");
@@ -104,6 +104,12 @@ const CodeEditor = () => {
 
         // Sync with EditorProvider for preview
         setCode(fileContent);
+        
+        // If this is the main file (index.html), also update mainFileContent for preview
+        if (file === 'index.html') {
+          setMainFileContent(fileContent);
+          console.log('🎯 Main file (index.html) content updated for preview');
+        }
       }
     } catch (error: any) {
       // Don't show error for aborted requests (normal when switching files)
@@ -134,7 +140,7 @@ const CodeEditor = () => {
       setIsLoading(false);
       abortControllerRef.current = null;
     }
-  }, [file, projectId, setIsLoading, setCode]);
+  }, [file, projectId, setIsLoading, setCode, setMainFileContent]);
 
   // Direct save function that ALWAYS reads from refs
   const saveToServer = async (fileContent: string) => {

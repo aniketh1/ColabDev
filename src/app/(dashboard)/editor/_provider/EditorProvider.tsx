@@ -8,6 +8,8 @@ interface TEditorProvider {
     setOpenBrowser: (value: boolean) => void
     code: string;
     setCode: (value: string) => void;
+    mainFileContent: string;
+    setMainFileContent: (value: string) => void;
     projectAccess: {
         isOwner: boolean;
         isCollaborator: boolean;
@@ -24,6 +26,8 @@ const initialValue = {
     setOpenBrowser: () => {},
     code: '',
     setCode: () => {},
+    mainFileContent: '',
+    setMainFileContent: () => {},
     projectAccess: {
         isOwner: false,
         isCollaborator: false,
@@ -41,6 +45,7 @@ export function EditorProviderComp({ children }: { children: React.ReactNode }) 
     const [isLoading, setIsLoading] = useState<boolean>(false)
     const [openBrowser, setOpenBrowser] = useState<boolean>(false)
     const [code, setCode] = useState<string>('')
+    const [mainFileContent, setMainFileContent] = useState<string>('')
     const [projectAccess, setProjectAccess] = useState({
         isOwner: false,
         isCollaborator: false,
@@ -58,6 +63,10 @@ export function EditorProviderComp({ children }: { children: React.ReactNode }) 
 
     const handleSetCode = (value: string) => {
         setCode(value)
+    }
+
+    const handleSetMainFileContent = (value: string) => {
+        setMainFileContent(value)
     }
 
     const handleSetProjectAccess = (value: any) => {
@@ -84,6 +93,8 @@ export function EditorProviderComp({ children }: { children: React.ReactNode }) 
             setOpenBrowser: handleOpenBrowser,
             code: code,
             setCode: handleSetCode,
+            mainFileContent: mainFileContent,
+            setMainFileContent: handleSetMainFileContent,
             projectAccess: projectAccess,
             setProjectAccess: handleSetProjectAccess
         }}>
