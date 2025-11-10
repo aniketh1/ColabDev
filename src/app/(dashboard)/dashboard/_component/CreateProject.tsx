@@ -242,31 +242,37 @@ const CreateProject = ({ buttonVarient }: TCreateProject) => {
                       type="button"
                       onClick={() => setSelectedStack(stack.id)}
                       className={`
-                        group relative p-5 border-2 rounded-xl text-left transition-all duration-300 hover:scale-[1.02] hover:shadow-lg
-                        ${selectedStack === stack.id 
-                          ? 'border-primary bg-primary/10 shadow-xl ring-2 ring-primary/20 dark:bg-primary/20' 
-                          : 'border-border hover:border-primary/50 bg-card hover:bg-accent/50 dark:hover:bg-accent/20'
+                        group relative p-6 border-2 rounded-xl text-left transition-all duration-300 hover:scale-[1.02] hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2
+                        ${selectedStack === stack.id
+                          ? 'border-primary bg-primary/5 shadow-xl ring-2 ring-primary/20 dark:bg-primary/10 dark:border-primary/80'
+                          : 'border-border/60 hover:border-primary/60 bg-card/80 hover:bg-accent/60 dark:bg-card/40 dark:hover:bg-accent/30 dark:border-border/40'
                         }
+                        backdrop-blur-sm
                       `}
+                      aria-label={`Select ${stack.name} tech stack`}
+                      aria-pressed={selectedStack === stack.id}
                     >
-                      <div className="flex items-start gap-3">
-                        <div className="text-4xl transition-transform group-hover:scale-110">
+                      <div className="flex items-start gap-4">
+                        <div className="text-4xl transition-transform group-hover:scale-110 flex-shrink-0" role="img" aria-label={`${stack.name} icon`}>
                           {stack.icon}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <h3 className="font-bold text-base mb-1 text-foreground group-hover:text-primary transition-colors">
+                          <h3 className="font-bold text-base mb-2 text-foreground group-hover:text-primary transition-colors leading-tight">
                             {stack.name}
                           </h3>
-                          <p className="text-xs text-muted-foreground leading-relaxed">
+                          <p className="text-sm text-muted-foreground leading-relaxed dark:text-muted-foreground/80">
                             {stack.description}
                           </p>
                         </div>
                         {selectedStack === stack.id && (
-                          <div className="absolute top-3 right-3 w-6 h-6 bg-primary rounded-full flex items-center justify-center shadow-lg animate-in zoom-in duration-200">
+                          <div className="absolute top-4 right-4 w-7 h-7 bg-primary rounded-full flex items-center justify-center shadow-lg animate-in zoom-in duration-200" aria-hidden="true">
                             <span className="text-primary-foreground text-sm font-bold">✓</span>
                           </div>
                         )}
                       </div>
+
+                      {/* Subtle gradient overlay for better visual appeal */}
+                      <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-primary/0 via-primary/0 to-primary/5 dark:to-primary/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
                     </button>
                   ))}
                 </div>
@@ -274,18 +280,19 @@ const CreateProject = ({ buttonVarient }: TCreateProject) => {
 
               {/* Preview Files */}
               {selectedStack && (
-                <div className="mt-4 p-4 bg-muted/50 dark:bg-muted/20 rounded-xl border border-border/50 backdrop-blur-sm">
-                  <p className="text-sm font-semibold mb-3 flex items-center gap-2 text-foreground">
-                    <span className="text-base">📁</span>
+                <div className="mt-6 p-5 bg-muted/40 dark:bg-muted/15 rounded-xl border border-border/40 backdrop-blur-sm shadow-sm">
+                  <p className="text-sm font-semibold mb-4 flex items-center gap-2 text-foreground">
+                    <span className="text-base" role="img" aria-label="folder">📁</span>
                     Files that will be created:
                   </p>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-3">
                     {Object.keys(techStacks.find(t => t.id === selectedStack)?.files || {}).map(fileName => (
-                      <span 
-                        key={fileName} 
-                        className="text-xs px-3 py-1.5 bg-background dark:bg-background/80 border border-border/70 rounded-lg font-mono text-foreground shadow-sm hover:shadow-md transition-shadow"
+                      <span
+                        key={fileName}
+                        className="text-xs px-4 py-2 bg-background/90 dark:bg-background/70 border border-border/60 rounded-lg font-mono text-foreground shadow-sm hover:shadow-md hover:bg-background dark:hover:bg-background/80 transition-all duration-200 flex items-center gap-2"
                       >
-                        📄 {fileName}
+                        <span role="img" aria-label="file">📄</span>
+                        {fileName}
                       </span>
                     ))}
                   </div>
