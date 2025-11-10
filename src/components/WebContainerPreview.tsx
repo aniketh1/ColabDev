@@ -22,18 +22,27 @@ export function WebContainerPreview({ projectId, techStack, files }: WebContaine
   const [status, setStatus] = useState<'booting' | 'installing' | 'starting' | 'ready' | 'error'>('booting');
   const [error, setError] = useState<string>('');
   const [logs, setLogs] = useState<string[]>([]);
+  
+  // Use a ref to hold the user files to check for changes without re-running the main effect
+  const filesRef = useRef(files);
 
   const addLog = (message: string) => {
     setLogs(prev => [...prev.slice(-5), message]);
     console.log('📦 WebContainer:', message);
   };
-
+  
+  // --- EFFECT 1: INITIAL BOOT, INSTALL, AND START ---
   useEffect(() => {
     let isMounted = true;
+    
+    // Clear state when project/techStack changes
+    setWebcontainer(null);
+    setUrl('');
+    setError('');
+    setLogs([]);
 
     const initWebContainer = async () => {
       try {
-        // Only run WebContainer for React, Vue, and Node projects
         if (techStack === 'html') {
           setStatus('error');
           setError('WebContainer is only for React, Vue, and Node.js projects');
@@ -43,100 +52,32 @@ export function WebContainerPreview({ projectId, techStack, files }: WebContaine
         addLog('Booting WebContainer...');
         setStatus('booting');
 
-        // Get WebContainer instance
         const container = await getWebContainer();
         if (!isMounted) return;
         
         setWebcontainer(container);
         addLog('✅ WebContainer booted');
 
-        // Create project files based on tech stack
-        let fileTree: any;
-        switch (techStack) {
-          case 'react':
-            fileTree = createReactProjectFiles(files);
-            break;
-          case 'vue':
-            fileTree = createVueProjectFiles(files);
-            break;
-          case 'node':
-            fileTree = createNodeProjectFiles(files);
-            break;
-          default:
-            throw new Error(`Unsupported tech stack: ${techStack}`);
-        }
-
-        addLog('Mounting project files...');
-        console.log('📁 File tree structure:', fileTree);
-        console.log('📝 User files received:', Object.keys(files));
-        await container.mount(fileTree);
-        addLog('✅ Files mounted');
-
+        // Initial Mount
+        await handleMount(container, techStack, files, addLog);
+        
+        if (!isMounted) return;
+        
         // Install dependencies
         addLog('Installing dependencies...');
         setStatus('installing');
-        
-        const installProcess = await container.spawn('npm', ['install']);
-        
-        installProcess.output.pipeTo(
-          new WritableStream({
-            write(data) {
-              if (data.includes('added') || data.includes('packages')) {
-                addLog(data.trim());
-              }
-            },
-          })
-        );
-
-        const installExitCode = await installProcess.exit;
-        if (installExitCode !== 0) {
-          throw new Error('Failed to install dependencies');
-        }
+        await handleInstall(container, addLog);
         
         if (!isMounted) return;
         addLog('✅ Dependencies installed');
-
+        
         // Start dev server
         addLog('Starting dev server...');
         setStatus('starting');
-
-        const startCommand = techStack === 'node' ? 'start' : 'dev';
-        console.log(`🚀 Running: npm run ${startCommand}`);
-        
-        // Set up server-ready listener BEFORE spawning process
-        const serverReadyPromise = new Promise<string>((resolve, reject) => {
-          const timeout = setTimeout(() => {
-            reject(new Error('Server start timeout after 60 seconds'));
-          }, 60000);
-
-          container.on('server-ready', (port, serverUrl) => {
-            console.log(`✅ Server ready event received - Port: ${port}, URL: ${serverUrl}`);
-            clearTimeout(timeout);
-            resolve(serverUrl);
-          });
-        });
-
-        const devProcess = await container.spawn('npm', ['run', startCommand]);
-
-        // Log output
-        devProcess.output.pipeTo(
-          new WritableStream({
-            write(data) {
-              const message = data.trim();
-              if (message) {
-                console.log('📦 Dev server:', message);
-                addLog(message);
-              }
-            },
-          })
-        );
-
-        // Wait for server to be ready
-        const serverUrl = await serverReadyPromise;
+        const serverUrl = await handleStart(container, techStack, addLog);
         
         if (!isMounted) return;
         addLog(`✅ Server ready at ${serverUrl}`);
-        console.log('🎉 WebContainer server URL:', serverUrl);
         setUrl(serverUrl);
         setStatus('ready');
 
@@ -166,7 +107,39 @@ export function WebContainerPreview({ projectId, techStack, files }: WebContaine
     return () => {
       isMounted = false;
     };
-  }, [projectId, techStack, JSON.stringify(files)]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [projectId, techStack]); // Only re-run on project or techStack change, files handled by second effect
+
+  // --- EFFECT 2: FILE CONTENT UPDATES (Hot Reload) ---
+  useEffect(() => {
+    // Prevent running on initial mount
+    if (!webcontainer || JSON.stringify(files) === JSON.stringify(filesRef.current)) {
+      filesRef.current = files; // Update ref if initial run
+      return;
+    }
+
+    const updateFiles = async () => {
+      addLog('User files changed. Updating WebContainer...');
+      
+      // Iterate over the new files object to find changed files
+      for (const filePath of Object.keys(files)) {
+        if (files[filePath] !== filesRef.current[filePath]) {
+          // Write only the changed file
+          addLog(`📝 Writing file: ${filePath}`);
+          await webcontainer.fs.writeFile(filePath, files[filePath]);
+        }
+      }
+
+      filesRef.current = files;
+      addLog('✅ File updates written (server should hot-reload)');
+    };
+
+    // Only update if status is ready, otherwise, the initial boot is handling it.
+    if (status === 'ready') {
+      updateFiles();
+    }
+
+  }, [files, webcontainer, status]); // Run when files change
 
   return (
     <div className="h-full w-full flex flex-col bg-gray-50">
@@ -246,10 +219,11 @@ export function WebContainerPreview({ projectId, techStack, files }: WebContaine
                   <p className="mt-1">Please close other preview windows and refresh the page.</p>
                 </div>
               )}
-              {error.includes('Cross-Origin') && (
+              {(error.includes('Cross-Origin') || error.includes('WebAssembly.Memory')) && (
                 <div className="mt-3 text-xs text-red-600 dark:text-red-400">
-                  <p className="font-semibold">CORS headers required.</p>
-                  <p className="mt-1">The server needs to be restarted with the new headers. Please restart your dev server.</p>
+                  <p className="font-semibold">Cross-Origin Isolation Required.</p>
+                  <p className="mt-1">Please ensure the host page has <strong>Cross-Origin-Opener-Policy: same-origin</strong> and <strong>Cross-Origin-Embedder-Policy: require-corp</strong> HTTP headers.</p>
+                  <p className="mt-1">Restart your dev server after updating next.config.ts</p>
                 </div>
               )}
             </div>
@@ -261,6 +235,7 @@ export function WebContainerPreview({ projectId, techStack, files }: WebContaine
       <div className="flex-1 relative">
         {status === 'ready' && url ? (
           <iframe
+            key={url}
             ref={iframeRef}
             src={url}
             className="w-full h-full border-0"
@@ -284,4 +259,81 @@ export function WebContainerPreview({ projectId, techStack, files }: WebContaine
       </div>
     </div>
   );
+}
+
+// --- Helper Functions to keep useEffect clean ---
+
+async function handleMount(container: WebContainer, techStack: 'react' | 'vue' | 'node', files: { [key: string]: string }, addLog: (m: string) => void) {
+    let fileTree: any;
+    switch (techStack) {
+        case 'react':
+            fileTree = createReactProjectFiles(files);
+            break;
+        case 'vue':
+            fileTree = createVueProjectFiles(files);
+            break;
+        case 'node':
+            fileTree = createNodeProjectFiles(files);
+            break;
+        default:
+            throw new Error(`Unsupported tech stack: ${techStack}`);
+    }
+
+    addLog('Mounting project files...');
+    console.log('📁 File tree structure:', fileTree);
+    console.log('📝 User files received:', Object.keys(files));
+    await container.mount(fileTree);
+    addLog('✅ Files mounted');
+}
+
+async function handleInstall(container: WebContainer, addLog: (m: string) => void): Promise<void> {
+    const installProcess = await container.spawn('npm', ['install']);
+    
+    installProcess.output.pipeTo(
+        new WritableStream({
+            write(data) {
+                if (data.includes('added') || data.includes('packages')) {
+                    addLog(data.trim());
+                }
+            },
+        })
+    );
+
+    const installExitCode = await installProcess.exit;
+    if (installExitCode !== 0) {
+        throw new Error('Failed to install dependencies');
+    }
+}
+
+async function handleStart(container: WebContainer, techStack: 'react' | 'vue' | 'node', addLog: (m: string) => void): Promise<string> {
+    const startCommand = techStack === 'node' ? 'start' : 'dev';
+    console.log(`🚀 Running: npm run ${startCommand}`);
+
+    const serverReadyPromise = new Promise<string>((resolve, reject) => {
+        const timeout = setTimeout(() => {
+            reject(new Error('Server start timeout after 60 seconds'));
+        }, 60000);
+
+        container.on('server-ready', (port, serverUrl) => {
+            console.log(`✅ Server ready event received - Port: ${port}, URL: ${serverUrl}`);
+            clearTimeout(timeout);
+            resolve(serverUrl);
+        });
+    });
+
+    const devProcess = await container.spawn('npm', ['run', startCommand]);
+
+    devProcess.output.pipeTo(
+        new WritableStream({
+            write(data) {
+                const message = data.trim();
+                if (message) {
+                    console.log('📦 Dev server:', message);
+                    addLog(message);
+                }
+            },
+        })
+    );
+
+    return serverReadyPromise;
 }
