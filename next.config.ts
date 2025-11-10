@@ -18,8 +18,8 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
-        // Apply to editor routes - route groups like (dashboard) don't appear in URLs
-        source: '/editor/:path*',
+        // Apply to all routes to enable WebContainer
+        source: '/:path*',
         headers: [
           {
             key: 'Cross-Origin-Embedder-Policy',
