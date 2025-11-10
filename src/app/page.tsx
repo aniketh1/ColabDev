@@ -116,8 +116,8 @@ export default function Home() {
               <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
               <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
             </Button>
-            <Button onClick={() => router.push("/login")} variant="outline" className="cursor-pointer">Login</Button>
-            <Button onClick={() => router.push("/register")} className="cursor-pointer hidden sm:inline-flex">Get Started</Button>
+            <Button onClick={() => router.push("/sign-in")} variant="outline" className="cursor-pointer">Login</Button>
+            <Button onClick={() => router.push("/sign-up")} className="cursor-pointer hidden sm:inline-flex">Get Started</Button>
           </div>
         </div>
       </header>
@@ -164,11 +164,11 @@ export default function Home() {
           </div>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
-            <Button onClick={() => router.push("/register")} size="lg" className="cursor-pointer px-8">
+            <Button onClick={() => router.push("/sign-up")} size="lg" className="cursor-pointer px-8">
               <Rocket className="w-5 h-5 mr-2" />
               Get Started
             </Button>
-            <Button onClick={() => router.push("/login")} variant="outline" size="lg" className="cursor-pointer px-8">
+            <Button onClick={() => router.push("/sign-in")} variant="outline" size="lg" className="cursor-pointer px-8">
               <Code2 className="w-5 h-5 mr-2" />
               Explore
             </Button>
@@ -251,7 +251,7 @@ export default function Home() {
           </div>
 
           <div className="text-center mt-12">
-            <Button onClick={() => router.push("/register")} size="lg" className="cursor-pointer px-8">
+            <Button onClick={() => router.push("/sign-up")} size="lg" className="cursor-pointer px-8">
               Start Coding Now
             </Button>
           </div>
@@ -268,7 +268,7 @@ export default function Home() {
           <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
             Join thousands of developers who are already building amazing projects together.
           </p>
-          <Button onClick={() => router.push("/register")} size="lg" className="cursor-pointer px-8">
+          <Button onClick={() => router.push("/sign-up")} size="lg" className="cursor-pointer px-8">
             <Rocket className="w-5 h-5 mr-2" />
             Get Started Free
           </Button>

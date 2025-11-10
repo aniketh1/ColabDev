@@ -105,8 +105,8 @@ export default function AboutPage() {
               <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
               <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
             </Button>
-            <Button onClick={() => router.push("/login")} variant="outline" className="cursor-pointer">Login</Button>
-            <Button onClick={() => router.push("/register")} className="cursor-pointer hidden sm:inline-flex">Get Started</Button>
+            <Button onClick={() => router.push("/sign-in")} variant="outline" className="cursor-pointer">Login</Button>
+            <Button onClick={() => router.push("/sign-up")} className="cursor-pointer hidden sm:inline-flex">Get Started</Button>
           </div>
         </div>
       </header>
@@ -253,7 +253,7 @@ export default function AboutPage() {
           <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
             Be part of a community that's reshaping how developers work together.
           </p>
-          <Button onClick={() => router.push("/register")} size="lg" className="cursor-pointer px-8">
+          <Button onClick={() => router.push("/sign-up")} size="lg" className="cursor-pointer px-8">
             Get Started Today
           </Button>
         </div>
