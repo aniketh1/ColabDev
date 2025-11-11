@@ -289,13 +289,11 @@ colabdev/
 
 **ColabDev** was developed by a dedicated team of Computer Science students at BMS College of Engineering:
 
-- **Project Lead**: [Team Member Name]
-- **Frontend Developer**: [Team Member Name]
-- **Backend Developer**: [Team Member Name]
-- **UI/UX Designer**: [Team Member Name]
-- **DevOps Engineer**: [Team Member Name]
+- **Aniket V Korwar** - Full Stack Developer & Project Lead (USN: 1BM23IS403)
+- **Rohan Raju Navalyal** - Data Analyst & System Architect (USN: 1BM22IS162)
+- **Suprit Sanadi** - Cloud Engineer (USN: 1BM23IS416)
 
-*For more information about the team, visit our [project documentation](docs/team.md)*
+*For more information about the team, visit our [About page](/about)*
 
 ---
 
@@ -348,7 +346,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Made with ❤️ by BMS College of Engineering Students**
 
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/itsamitprajapati)
-[![Portfolio](https://img.shields.io/badge/Portfolio-000000?style=for-the-badge&logo=About.me&logoColor=white)](https://amitprajapati.co.in/)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/aniket-korwar-064550203)
+[![Portfolio](https://img.shields.io/badge/Portfolio-000000?style=for-the-badge&logo=About.me&logoColor=white)](https://aniketkorwar.netlify.app)
 
 </div>
