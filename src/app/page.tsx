@@ -101,8 +101,7 @@ export default function Home() {
     product: [
       { name: "Home", href: "/" },
       { name: "Features", href: "#features" },
-      { name: "Dashboard", href: "/dashboard" },
-      { name: "Explore", href: "/explore" }
+      { name: "Dashboard", href: "/dashboard" }
     ],
     company: [
       { name: "About Us", href: "/about" }
@@ -145,7 +144,6 @@ export default function Home() {
             <a href="#features" className="text-sm font-medium hover:text-primary transition-colors">Features</a>
             <a href="#use-cases" className="text-sm font-medium hover:text-primary transition-colors">Use Cases</a>
             <a href="#learn" className="text-sm font-medium hover:text-primary transition-colors">Learn</a>
-            <a href="/explore" className="text-sm font-medium hover:text-primary transition-colors">🔍 Explore</a>
             <a href="/about" className="text-sm font-medium hover:text-primary transition-colors">About</a>
             <a href="/dashboard" className="text-sm font-medium hover:text-primary transition-colors">Dashboard</a>
           </nav>
@@ -219,7 +217,7 @@ export default function Home() {
             </Button>
             <Button onClick={() => router.push("/sign-in")} variant="outline" size="lg" className="cursor-pointer px-8">
               <Code2 className="w-5 h-5 mr-2" />
-              Explore
+              Sign In
             </Button>
           </div>
         </div>
@@ -271,11 +269,11 @@ export default function Home() {
               <div className="space-y-4 text-lg text-muted-foreground">
                 <p className="flex items-start gap-3">
                   <span className="text-2xl">🔥</span>
-                  <span><strong className="text-foreground">Vibe Check:</strong> Peep real projects from devs crushing it right now. No cap, these are actual working codes!</span>
+                  <span><strong className="text-foreground">Vibe Check:</strong> Work on real projects with live collaboration. No cap, code together in real-time!</span>
                 </p>
                 <p className="flex items-start gap-3">
                   <span className="text-2xl">💯</span>
-                  <span><strong className="text-foreground">No Gatekeeping:</strong> Read-only access means you can explore everything without breaking stuff. It&apos;s giving safe space energy!</span>
+                  <span><strong className="text-foreground">No Gatekeeping:</strong> Access powerful features and collaborate with others. It&apos;s giving safe space energy!</span>
                 </p>
                 <p className="flex items-start gap-3">
                   <span className="text-2xl">🚀</span>
@@ -289,12 +287,12 @@ export default function Home() {
 
               <div className="flex flex-col sm:flex-row gap-4 pt-4">
                 <Button 
-                  onClick={() => router.push("/explore")} 
+                  onClick={() => router.push("/dashboard")} 
                   size="lg" 
                   className="cursor-pointer px-8 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-bold text-lg group"
                 >
-                  <span className="mr-2 group-hover:scale-110 transition-transform inline-block">🔍</span>
-                  Start Exploring Projects
+                  <span className="mr-2 group-hover:scale-110 transition-transform inline-block">�</span>
+                  Start Building
                   <Rocket className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
                 </Button>
                 <Button 
@@ -333,7 +331,7 @@ export default function Home() {
                     <div className="w-3 h-3 rounded-full bg-red-500"></div>
                     <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
                     <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                    <span className="ml-4 text-sm text-muted-foreground font-mono">explore-projects.tsx</span>
+                    <span className="ml-4 text-sm text-muted-foreground font-mono">collab-coding.tsx</span>
                   </div>
                   
                   <div className="space-y-2 font-mono text-sm">
@@ -345,16 +343,16 @@ export default function Home() {
                     </div>
                     <div className="h-2"></div>
                     <div className="text-blue-700 dark:text-blue-400">
-                      <span className="text-blue-600 dark:text-blue-400">function</span> <span className="text-yellow-600 dark:text-yellow-400">levelUp</span>() {"{"}
+                      <span className="text-blue-600 dark:text-blue-400">function</span> <span className="text-yellow-600 dark:text-yellow-400">collaborate</span>() {"{"}
                     </div>
                     <div className="pl-4 text-muted-foreground">
-                      <span className="text-cyan-600 dark:text-cyan-400">explore</span>(<span className="text-green-600 dark:text-green-400">&apos;community-projects&apos;</span>);
+                      <span className="text-cyan-600 dark:text-cyan-400">create</span>(<span className="text-green-600 dark:text-green-400">&apos;new-project&apos;</span>);
                     </div>
                     <div className="pl-4 text-muted-foreground">
-                      <span className="text-blue-600 dark:text-blue-400">learn</span>(<span className="text-green-600 dark:text-green-400">&apos;real-code&apos;</span>);
+                      <span className="text-blue-600 dark:text-blue-400">code</span>(<span className="text-green-600 dark:text-green-400">&apos;together&apos;</span>);
                     </div>
                     <div className="pl-4 text-muted-foreground">
-                      <span className="text-cyan-600 dark:text-cyan-400">build</span>(<span className="text-green-600 dark:text-green-400">&apos;amazing-stuff&apos;</span>);
+                      <span className="text-cyan-600 dark:text-cyan-400">deploy</span>(<span className="text-green-600 dark:text-green-400">&apos;amazing-stuff&apos;</span>);
                     </div>
                     <div className="text-blue-700 dark:text-blue-400">{"}"}</div>
                   </div>
