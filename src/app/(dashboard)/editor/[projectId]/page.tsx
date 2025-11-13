@@ -16,6 +16,7 @@ import { useLiveblocksCollaboration } from "@/hooks/useLiveblocksCollaboration";
 import { useLiveblocksCollaborationReal } from "@/hooks/useLiveblocksCollaborationReal";
 import { useIsLiveblocksAvailable } from "@/contexts/LiveblocksAvailabilityContext";
 import { cn } from "@/lib/utils";
+import ChatPanel from "../_component/ChatPanel";
 
 const CodeEditor = () => {
   const searchParams = useSearchParams();
@@ -547,7 +548,10 @@ export default function EditorPage() {
   
   return (
     <LiveblocksProvider roomId={`project-${projectId}`}>
-      <CodeEditor />
+      <div className="relative h-full">
+        <CodeEditor />
+        <ChatPanel />
+      </div>
     </LiveblocksProvider>
   );
 }

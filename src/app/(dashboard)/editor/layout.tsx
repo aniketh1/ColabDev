@@ -4,8 +4,8 @@ import EditorHeader from "./_component/EditorHeader";
 import EditorSidebar from "./_component/EditorSidebar";
 import FileOpen from "./_component/FileOpen";
 import ConnectionStatus from "./_component/ConnectionStatus";
-import ChatPanel from "./_component/ChatPanel";
 import PreviewPanel from "./_component/PreviewPanel";
+import ChatPanel from "./_component/ChatPanel";
 import { EditorProviderComp } from "./_provider/EditorProvider";
 
 export default function EditorLayout({
@@ -53,10 +53,8 @@ export default function EditorLayout({
             </div>
           </main>
         </div>
-
-        {/* COMPONENT 4: Floating Chat Panel */}
-        <ChatPanel />
       </EditorProviderComp>
+      <ChatPanel />
     </div>
   );
 }

@@ -1,78 +1,107 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
-import { useParams } from "next/navigation";
-import { useUser } from "@clerk/nextjs";
-import { MessageCircle, Send, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { toast } from "sonner";
 
-type Message = {
+import { useState, useEffect, useRef } from "react";
+import { MessageCircle, X, Send } from "lucide-react";
+import { useUser } from "@clerk/nextjs";
+import { useParams } from "next/navigation";
+import * as Ably from "ably";
+import { ChatClient, ChatMessageEvent } from "@ably/chat";
+
+interface Message {
   id: string;
+  text: string;
   userId: string;
   userName: string;
-  userAvatar?: string;
-  message: string;
+  userImage?: string;
   timestamp: number;
-};
+}
 
 export default function ChatPanel() {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
-  const [newMessage, setNewMessage] = useState("");
-  const [isSending, setIsSending] = useState(false);
+  const [inputValue, setInputValue] = useState("");
+  const [isConnected, setIsConnected] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { projectId } = useParams();
+  const chatClientRef = useRef<ChatClient | null>(null);
+  const roomRef = useRef<any>(null);
   const { user } = useUser();
-
-  // Auto-scroll to bottom when new messages arrive
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
+  const params = useParams();
+  const projectId = params?.projectId as string;
 
   useEffect(() => {
-    scrollToBottom();
+    if (!user || !projectId) return;
+
+    const initChat = async () => {
+      try {
+        const ablyClient = new Ably.Realtime({
+          key: "tydMYw.lOahyg:uc69YLJIPbWgp6D8cTZnDoUOUwMJjU-M560erKIp4-k",
+          clientId: user.id,
+        });
+
+        const chatClient = new ChatClient(ablyClient);
+        chatClientRef.current = chatClient;
+
+        const room = await chatClient.rooms.get(`project-${projectId}`);
+        roomRef.current = room;
+
+        room.messages.subscribe((messageEvent: ChatMessageEvent) => {
+          const msg = messageEvent.message;
+          const newMessage: Message = {
+            id: msg.timeserial || `${Date.now()}-${Math.random()}`,
+            text: msg.text || "",
+            userId: msg.clientId || "unknown",
+            userName: (msg.metadata as any)?.userName || "Anonymous",
+            userImage: (msg.metadata as any)?.userImage,
+            timestamp: msg.timestamp?.getTime() || Date.now(),
+          };
+          
+          setMessages((prev) => {
+            if (prev.some(m => m.id === newMessage.id)) {
+              return prev;
+            }
+            return [...prev, newMessage];
+          });
+        });
+
+        await room.attach();
+        setIsConnected(true);
+        console.log("Chat connected");
+      } catch (error) {
+        console.error("Failed to initialize chat:", error);
+      }
+    };
+
+    initChat();
+
+    return () => {
+      if (roomRef.current) {
+        roomRef.current.detach().catch(console.error);
+      }
+      if (chatClientRef.current) {
+        chatClientRef.current.rooms.release(`project-${projectId}`).catch(console.error);
+      }
+    };
+  }, [user, projectId]);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Load messages (you can integrate with your backend/Liveblocks)
-  useEffect(() => {
-    // TODO: Load messages from your backend or Liveblocks
-    // For now, adding a welcome message
-    setMessages([
-      {
-        id: "1",
-        userId: "system",
-        userName: "System",
-        message: "Welcome to the project chat! Collaborate with your team here.",
-        timestamp: Date.now(),
-      },
-    ]);
-  }, [projectId]);
-
   const handleSendMessage = async () => {
-    if (!newMessage.trim() || isSending || !user) return;
+    if (!inputValue.trim() || !user || !roomRef.current || !isConnected) return;
 
-    setIsSending(true);
-    
     try {
-      const message: Message = {
-        id: Date.now().toString(),
-        userId: user.id,
-        userName: user.fullName || user.username || "Anonymous",
-        userAvatar: user.imageUrl,
-        message: newMessage.trim(),
-        timestamp: Date.now(),
-      };
-
-      // TODO: Send to backend/Liveblocks
-      setMessages((prev) => [...prev, message]);
-      setNewMessage("");
+      await roomRef.current.messages.send({
+        text: inputValue.trim(),
+        metadata: {
+          userName: user.fullName || user.username || "Anonymous",
+          userImage: user.imageUrl,
+        },
+      });
       
-      // TODO: Broadcast to other users via Liveblocks
+      setInputValue("");
     } catch (error) {
-      toast.error("Failed to send message");
-    } finally {
-      setIsSending(false);
+      console.error("Failed to send message:", error);
     }
   };
 
@@ -83,17 +112,12 @@ export default function ChatPanel() {
     }
   };
 
-  const formatTime = (timestamp: number) => {
-    const date = new Date(timestamp);
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  };
-
   if (!isOpen) {
     return (
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 w-14 h-14 bg-[#007acc] hover:bg-[#005999] text-white rounded-full shadow-lg flex items-center justify-center transition-all z-40"
-        title="Open Chat"
+        className="fixed bottom-6 right-6 bg-blue-600 hover:bg-blue-700 text-white rounded-full p-4 shadow-lg transition-all z-50"
+        aria-label="Open chat"
       >
         <MessageCircle className="w-6 h-6" />
       </button>
@@ -101,87 +125,99 @@ export default function ChatPanel() {
   }
 
   return (
-    <div className="fixed bottom-6 right-6 w-80 h-[500px] bg-[#252526] border border-[#2d2d2d] rounded-lg shadow-2xl flex flex-col z-40">
-      {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-[#2d2d2d] bg-[#323233]">
+    <div className="fixed bottom-6 right-6 w-96 h-[500px] bg-[#252526] border border-[#3e3e42] rounded-lg shadow-2xl flex flex-col z-50">
+      <div className="flex items-center justify-between p-4 border-b border-[#3e3e42] bg-[#2d2d30]">
         <div className="flex items-center gap-2">
-          <MessageCircle className="w-4 h-4 text-[#007acc]" />
-          <h3 className="text-sm font-semibold text-[#cccccc]">Team Chat</h3>
+          <MessageCircle className="w-5 h-5 text-blue-500" />
+          <h3 className="text-white font-medium">Team Chat</h3>
+          {isConnected && (
+            <span className="w-2 h-2 bg-green-500 rounded-full" title="Connected"></span>
+          )}
         </div>
         <button
           onClick={() => setIsOpen(false)}
-          className="text-[#999999] hover:text-[#cccccc] transition-colors"
+          className="text-gray-400 hover:text-white transition-colors"
+          aria-label="Close chat"
         >
-          <X className="w-4 h-4" />
+          <X className="w-5 h-5" />
         </button>
       </div>
 
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-[#1e1e1e]">
-        {messages.map((msg) => (
-          <div
-            key={msg.id}
-            className={`flex gap-2 ${
-              msg.userId === user?.id ? "flex-row-reverse" : "flex-row"
-            }`}
-          >
-            {/* Avatar */}
-            <div className="w-8 h-8 rounded-full bg-[#007acc] flex items-center justify-center flex-shrink-0 text-white text-xs font-bold">
-              {msg.userAvatar ? (
-                <img src={msg.userAvatar} alt={msg.userName} className="w-8 h-8 rounded-full" />
-              ) : (
-                msg.userName.charAt(0).toUpperCase()
-              )}
-            </div>
-
-            {/* Message */}
-            <div
-              className={`flex-1 ${
-                msg.userId === user?.id ? "text-right" : "text-left"
-              }`}
-            >
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-xs font-medium text-[#cccccc]">
-                  {msg.userName}
-                </span>
-                <span className="text-[10px] text-[#999999]">
-                  {formatTime(msg.timestamp)}
-                </span>
-              </div>
-              <div
-                className={`inline-block px-3 py-2 rounded-lg text-sm ${
-                  msg.userId === user?.id
-                    ? "bg-[#007acc] text-white"
-                    : "bg-[#2a2d2e] text-[#cccccc]"
-                }`}
-              >
-                {msg.message}
-              </div>
-            </div>
+      <div className="flex-1 overflow-y-auto p-4 space-y-3">
+        {messages.length === 0 ? (
+          <div className="text-center text-gray-500 mt-8">
+            <MessageCircle className="w-12 h-12 mx-auto mb-2 opacity-50" />
+            <p>No messages yet</p>
+            <p className="text-sm">Start the conversation!</p>
           </div>
-        ))}
+        ) : (
+          messages.map((message) => {
+            const isCurrentUser = message.userId === user?.id;
+            return (
+              <div
+                key={message.id}
+                className={`flex gap-2 ${isCurrentUser ? "flex-row-reverse" : ""}`}
+              >
+                <div className="flex-shrink-0">
+                  {message.userImage ? (
+                    <img
+                      src={message.userImage}
+                      alt={message.userName}
+                      className="w-8 h-8 rounded-full"
+                    />
+                  ) : (
+                    <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-sm font-medium">
+                      {message.userName.charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                </div>
+
+                <div className={`flex-1 max-w-[75%] ${isCurrentUser ? "text-right" : ""}`}>
+                  <div className="text-xs text-gray-400 mb-1">
+                    {isCurrentUser ? "You" : message.userName}
+                  </div>
+                  <div
+                    className={`inline-block px-3 py-2 rounded-lg ${
+                      isCurrentUser
+                        ? "bg-blue-600 text-white"
+                        : "bg-[#3e3e42] text-gray-200"
+                    }`}
+                  >
+                    <p className="text-sm break-words">{message.text}</p>
+                  </div>
+                  <div className="text-xs text-gray-500 mt-1">
+                    {new Date(message.timestamp).toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </div>
+                </div>
+              </div>
+            );
+          })
+        )}
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input */}
-      <div className="p-3 border-t border-[#2d2d2d] bg-[#252526]">
+      <div className="p-4 border-t border-[#3e3e42] bg-[#2d2d30]">
         <div className="flex gap-2">
-          <Input
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
+          <input
+            type="text"
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
             onKeyPress={handleKeyPress}
-            placeholder="Type a message..."
-            disabled={isSending}
-            className="flex-1 bg-[#3c3c3c] border-[#2d2d2d] text-white placeholder:text-[#999999] focus:border-[#007acc] text-sm h-9"
+            placeholder={isConnected ? "Type a message..." : "Connecting..."}
+            disabled={!isConnected}
+            className="flex-1 bg-[#3c3c3c] text-white px-3 py-2 rounded-lg border border-[#3e3e42] focus:outline-none focus:border-blue-500 text-sm disabled:opacity-50"
           />
-          <Button
+          <button
             onClick={handleSendMessage}
-            disabled={isSending || !newMessage.trim()}
-            size="icon"
-            className="bg-[#007acc] hover:bg-[#005999] text-white h-9 w-9"
+            disabled={!inputValue.trim() || !isConnected}
+            className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white p-2 rounded-lg transition-colors"
+            aria-label="Send message"
           >
-            <Send className="w-4 h-4" />
-          </Button>
+            <Send className="w-5 h-5" />
+          </button>
         </div>
       </div>
     </div>
