@@ -34,7 +34,7 @@ export default function ChatPanel() {
     const initChat = async () => {
       try {
         const ablyClient = new Ably.Realtime({
-          key: "tydMYw.lOahyg:uc69YLJIPbWgp6D8cTZnDoUOUwMJjU-M560erKIp4-k",
+          key: process.env.NEXT_PUBLIC_ABLY_API_KEY!,
           clientId: user.id,
         });
 
